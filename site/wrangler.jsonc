@@ -1,0 +1,9 @@
+{
+  // Static-assets deployment for the Astro portfolio (no server code).
+  // Cloudflare Workers serves the built ./dist folder directly.
+  "name": "portfolio-site",
+  "compatibility_date": "2026-08-12",
+  "assets": {
+    "directory": "./dist"
+  }
+}
