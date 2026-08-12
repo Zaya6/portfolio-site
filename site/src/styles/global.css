@@ -323,3 +323,10 @@
   .pf-onward a { font-family: var(--font-sans); font-size: 1.05rem; color: var(--ink); border-bottom: 1px solid var(--gold); padding-bottom: 2px; transition: color .2s; }
   .pf-onward a:hover { color: var(--gold); }
   .pf-onward a .arrow { color: var(--gold); }
+  /* portfolio secondary links (LinkedIn / Resume) beside the art forward link */
+  .pf-elsewhere { margin-top: 0.85rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.85rem; font-size: 0.92rem; color: var(--muted); }
+  .pf-elsewhere.pf-elsewhere-center { justify-content: center; }
+  .pf-elsewhere a { color: var(--muted); border-bottom: 1px solid var(--hairline-2); padding-bottom: 2px; transition: color .2s, border-color .2s; }
+  .pf-elsewhere a:hover { color: var(--gold); border-color: var(--gold); }
+  .pf-elsewhere a .ext { color: var(--gold); font-size: 0.82em; border: 0; }
+  .pf-elsewhere .sep { color: var(--faint); }
