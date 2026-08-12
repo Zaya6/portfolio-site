@@ -33,7 +33,7 @@ const personal = projects.filter((p) => p.data.group === 'personal').sort(bySort
               {p.data.cover === 'lw' ? (
                 <div class="pf-media"><span class="lw">Light &amp; Wonder</span></div>
               ) : (
-                <div class="pf-media"><img src={`/assets/covers/${p.data.cover}.jpg`} alt={p.data.title} loading="lazy" /></div>
+                <div class="pf-media"><video src={`/assets/covers/${p.data.cover}.mp4`} poster={`/assets/covers/${p.data.cover}.jpg`} autoplay muted loop playsinline preload="metadata" aria-label={`${p.data.title} preview`}></video></div>
               )}
               <div class="pf-info">
                 <p class="pf-cat">{p.data.category}</p>
@@ -59,7 +59,7 @@ const personal = projects.filter((p) => p.data.group === 'personal').sort(bySort
         <div class="pf-list">
           {personal.map((p) => (
             <a class="pf-row" href={`/work/${p.id}`}>
-              <div class="pf-media"><img src={`/assets/covers/${p.data.cover}.jpg`} alt={p.data.title} loading="lazy" /></div>
+              <div class="pf-media"><video src={`/assets/covers/${p.data.cover}.mp4`} poster={`/assets/covers/${p.data.cover}.jpg`} autoplay muted loop playsinline preload="metadata" aria-label={`${p.data.title} preview`}></video></div>
               <div class="pf-info">
                 <p class="pf-cat">{p.data.category}</p>
                 <h4>{p.data.title}</h4>
