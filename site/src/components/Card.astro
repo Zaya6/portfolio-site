@@ -1,0 +1,19 @@
+---
+const { project } = Astro.props;
+const p = project;
+const blurb = p.data.blurb ?? p.data.summary.split(/(?<=[.!?])\s/)[0];
+---
+<a class="card" href={`/work/${p.id}`}>
+  {p.data.cover === 'lw' ? (
+    <div class="plate"><span class="lw-plate">Light &amp; Wonder</span></div>
+  ) : (
+    <div class="plate">
+      <video src={`/assets/covers/${p.data.cover}.mp4`} poster={`/assets/covers/${p.data.cover}.jpg`} autoplay muted loop playsinline preload="metadata" aria-label={`${p.data.title} preview`}></video>
+    </div>
+  )}
+  <div class="card-body">
+    <span class="tag">{p.data.category}</span>
+    <h3>{p.data.title}</h3>
+    <p>{blurb}</p>
+  </div>
+</a>

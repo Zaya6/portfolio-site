@@ -1,0 +1,42 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Video from '../../components/Video.astro';
+import Media from '../../components/Media.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((p) => ({ params: { slug: p.id }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const d = project.data;
+---
+<Base title={`${d.title} — Isaiah Gilliland`} description={d.summary} current="Work">
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="crumb"><a href="/">Work</a> <span class="arrow">&rarr;</span> {d.title}</p>
+      <p class="eyebrow" style="margin-top:1rem;">{d.category}</p>
+      <h1>{d.title}</h1>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap content-grid">
+      <div class="prose">
+        <h3>Summary</h3>
+        <p class="summary-lede">{d.summary}</p>
+        <Content components={{ Video, Media }} />
+      </div>
+      <aside class="aside">
+        <dl>
+          <dt>Context</dt><dd>{d.category}</dd>
+          {d.role && (<><dt>Role</dt><dd>{d.role}</dd></>)}
+          {d.year && (<><dt>Year</dt><dd>{d.year}</dd></>)}
+          {d.stack && (<><dt>Tools</dt><dd class="muted">{d.stack}</dd></>)}
+        </dl>
+      </aside>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,25 @@
+---
+title: "High Voltage Link"
+category: "Everi · Technical Art"
+group: "everi"
+cover: "high-voltage-link"
+role: "Technical Artist"
+year: "2022–2025"
+stack: "Shaders · HLSL · DirectX 9"
+summary: "A full-screen “pulse morph” effect delivered as an HLSL pixel shader for DirectX 9.0, built entirely from mathematical principles with no loops or branches. The difficult part was a hidden compiled-instruction limit in older DirectX, which I traced by reading the shader's compiled assembly directly."
+order: 4
+---
+
+<Video id="ZsbWskkjomA" />
+
+I joined High Voltage Link late in its development cycle for a single, specific request: a full-screen "pulse morph" effect — a radiating distortion that ripples outward across the screen.
+
+## The shader
+
+I delivered it as a pixel shader written in HLSL for DirectX 9.0, the most recent graphics API our custom engine supported, and it shipped in the final game. The effect uses no loops or conditional branches; it is built entirely from mathematical principles, which keeps it fast and predictable on the target hardware. I also wrote it with the wider team in mind, using variable packing and preprocessor statements to expose sensible default values that developers could adjust to their needs without touching the underlying math.
+
+## Working around a hidden compiler limit
+
+The difficult part was that the engine provided no error messages or feedback of any kind, and for some time the effect would not render at all. Isolating the cause meant digging into DirectX 9.0 and a considerable amount of experimentation. The culprit was an instruction limit for shaders in older versions of DirectX: although the source was well under 80 lines, its compiled form exceeded the cap. I only identified it by reading the shader's compiled assembly directly and simplifying from there.
+
+Resolving it left the shader both working and considerably more optimized than where it began.

@@ -1,0 +1,206 @@
+[
+ {
+  "slug": "digital-paintings",
+  "label": "Digital Paintings",
+  "items": [
+   {
+    "src": "/assets/art/digital-paintings-01.jpg",
+    "w": 800,
+    "h": 1131
+   },
+   {
+    "src": "/assets/art/digital-paintings-02.jpg",
+    "w": 1280,
+    "h": 905
+   },
+   {
+    "src": "/assets/art/digital-paintings-03.jpg",
+    "w": 1280,
+    "h": 905
+   },
+   {
+    "src": "/assets/art/digital-paintings-04.jpg",
+    "w": 1280,
+    "h": 1502
+   },
+   {
+    "src": "/assets/art/digital-paintings-05.jpg",
+    "w": 1024,
+    "h": 1024
+   },
+   {
+    "src": "/assets/art/digital-paintings-06.jpg",
+    "w": 1280,
+    "h": 1810
+   },
+   {
+    "src": "/assets/art/digital-paintings-07.jpg",
+    "w": 1280,
+    "h": 1276
+   }
+  ]
+ },
+ {
+  "slug": "concepts",
+  "label": "Concepts",
+  "items": [
+   {
+    "src": "/assets/art/concepts-08.jpg",
+    "w": 1280,
+    "h": 1741
+   },
+   {
+    "src": "/assets/art/concepts-09.jpg",
+    "w": 1280,
+    "h": 1280
+   },
+   {
+    "src": "/assets/art/concepts-10.jpg",
+    "w": 705,
+    "h": 998
+   },
+   {
+    "src": "/assets/art/concepts-11.jpg",
+    "w": 1280,
+    "h": 1834
+   },
+   {
+    "src": "/assets/art/concepts-12.jpg",
+    "w": 1280,
+    "h": 1810
+   },
+   {
+    "src": "/assets/art/concepts-13.jpg",
+    "w": 1280,
+    "h": 996
+   },
+   {
+    "src": "/assets/art/concepts-14.jpg",
+    "w": 1280,
+    "h": 701
+   },
+   {
+    "src": "/assets/art/concepts-15.jpg",
+    "w": 1280,
+    "h": 1280
+   },
+   {
+    "src": "/assets/art/concepts-16.jpg",
+    "w": 1280,
+    "h": 1295
+   },
+   {
+    "src": "/assets/art/concepts-17.jpg",
+    "w": 1280,
+    "h": 1294
+   },
+   {
+    "src": "/assets/art/concepts-18.jpg",
+    "w": 1280,
+    "h": 1295
+   }
+  ]
+ },
+ {
+  "slug": "design",
+  "label": "Design",
+  "items": [
+   {
+    "src": "/assets/art/design-19.jpg",
+    "w": 1280,
+    "h": 1369
+   },
+   {
+    "src": "/assets/art/design-20.jpg",
+    "w": 1280,
+    "h": 1932
+   },
+   {
+    "src": "/assets/art/design-21.jpg",
+    "w": 1280,
+    "h": 1810
+   },
+   {
+    "src": "/assets/art/design-22.jpg",
+    "w": 284,
+    "h": 266
+   },
+   {
+    "src": "/assets/art/design-23.jpg",
+    "w": 751,
+    "h": 2048
+   },
+   {
+    "src": "/assets/art/design-24.jpg",
+    "w": 554,
+    "h": 471
+   },
+   {
+    "src": "/assets/art/design-25.jpg",
+    "w": 1280,
+    "h": 1235
+   },
+   {
+    "src": "/assets/art/design-26.jpg",
+    "w": 1280,
+    "h": 1280
+   }
+  ]
+ },
+ {
+  "slug": "3d-modeling",
+  "label": "3D Modeling",
+  "items": [
+   {
+    "src": "/assets/art/3d-modeling-27.jpg",
+    "w": 526,
+    "h": 767
+   },
+   {
+    "src": "/assets/art/3d-modeling-28.jpg",
+    "w": 520,
+    "h": 758
+   },
+   {
+    "src": "/assets/art/3d-modeling-29.jpg",
+    "w": 546,
+    "h": 796
+   },
+   {
+    "src": "/assets/art/3d-modeling-30.jpg",
+    "w": 1280,
+    "h": 720
+   },
+   {
+    "src": "/assets/art/3d-modeling-31.jpg",
+    "w": 600,
+    "h": 338
+   },
+   {
+    "src": "/assets/art/3d-modeling-32.jpg",
+    "w": 691,
+    "h": 577
+   },
+   {
+    "src": "/assets/art/3d-modeling-33.jpg",
+    "w": 660,
+    "h": 552
+   },
+   {
+    "src": "/assets/art/3d-modeling-34.jpg",
+    "w": 869,
+    "h": 727
+   },
+   {
+    "src": "/assets/art/3d-modeling-35.jpg",
+    "w": 1130,
+    "h": 744
+   },
+   {
+    "src": "/assets/art/3d-modeling-36.jpg",
+    "w": 997,
+    "h": 627
+   }
+  ]
+ }
+]

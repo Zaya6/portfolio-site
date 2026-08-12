@@ -1,0 +1,74 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { everiTitles } from '../data/everiTitles.js';
+
+const projects = await getCollection('projects');
+const bySort = (a, b) => a.data.order - b.data.order;
+const professional = projects.filter((p) => p.data.group !== 'personal').sort(bySort);
+const personal = projects.filter((p) => p.data.group === 'personal').sort(bySort);
+---
+<Base title="Portfolio — Isaiah Gilliland" current="Portfolio">
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow reveal r1">Portfolio</p>
+      <h1 class="reveal r2">The quick version</h1>
+      <p class="lede reveal r3">One idea, chased into code, art, and the occasional game engine. Pull any thread.</p>
+      <p class="skim-link reveal r3">Rather see the visual side? <a href="/art">Browse my art <span class="arrow">&rarr;</span></a></p>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap">
+      <div class="pf-group">
+        <p class="pf-group-label">Professional work</p>
+        <div class="pf-list">
+          {professional.map((p) => (
+            <a class="pf-row" href={`/work/${p.id}`}>
+              {p.data.cover === 'lw' ? (
+                <div class="pf-media"><span class="lw">Light &amp; Wonder</span></div>
+              ) : (
+                <div class="pf-media"><img src={`/assets/covers/${p.data.cover}.jpg`} alt={p.data.title} loading="lazy" /></div>
+              )}
+              <div class="pf-info">
+                <p class="pf-cat">{p.data.category}</p>
+                <h4>{p.data.title}</h4>
+                <p>{p.data.summary}</p>
+              </div>
+              <span class="pf-go">View <span class="arrow">&rarr;</span></span>
+            </a>
+          ))}
+        </div>
+        <div class="ot-block">
+          <p class="ot-block-lbl"><a href="/other-titles">And 11 more titles I contributed to at Everi <span class="arrow">&rarr;</span></a></p>
+          <div class="ot-grid">
+            {everiTitles.map((t) => (
+              <a href="/other-titles"><img src={`/assets/other-titles/${t.slug}.jpg`} alt={t.title} loading="lazy" /><span class="cap">{t.title}</span></a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="pf-group">
+        <p class="pf-group-label">Personal projects</p>
+        <div class="pf-list">
+          {personal.map((p) => (
+            <a class="pf-row" href={`/work/${p.id}`}>
+              <div class="pf-media"><img src={`/assets/covers/${p.data.cover}.jpg`} alt={p.data.title} loading="lazy" /></div>
+              <div class="pf-info">
+                <p class="pf-cat">{p.data.category}</p>
+                <h4>{p.data.title}</h4>
+                <p>{p.data.summary}</p>
+              </div>
+              <span class="pf-go">View <span class="arrow">&rarr;</span></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div class="pf-onward">
+        <p>Want to keep learning about me?</p>
+        <a href="/art">Browse my art <span class="arrow">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+</Base>

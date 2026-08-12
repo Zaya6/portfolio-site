@@ -1,0 +1,106 @@
+---
+import Base from '../layouts/Base.astro';
+
+const services = [
+  { name: 'Character illustration', price: 'from $180', note: 'sketch · $800 fully rendered',
+    desc: 'A single character — yours or designed with you. Sketch, flat color, or fully rendered, with an optional background.' },
+  { name: 'Concept art', price: 'from $500', note: 'per concept',
+    desc: 'Characters, props, or environments to explore and lock a look. Delivered with the exploration behind it, not just a final.' },
+  { name: 'Illustration & key art', price: 'from $1,800', note: 'composed piece',
+    desc: 'A finished, fully composed piece — a cover, a poster, a splash, a scene. Built around one clear idea.' },
+  { name: '3D model', price: 'from $900', note: 'modeled & textured',
+    desc: 'A game- or render-ready character or asset, modeled and textured to spec.' },
+  { name: '3D rigging', price: 'from $600', note: 'or $70/hr',
+    desc: 'A clean, production-ready rig — IK/FK switching, custom controls, weight painting that holds up under animation.' },
+  { name: 'Portrait', price: 'from $300', note: 'bust / portrait',
+    desc: 'A painted bust or portrait — a person, a character, a companion.' },
+];
+
+const steps = [
+  { t: 'Reach out', d: 'Tell me what you have in mind — a description, references, and roughly what it’s for.' },
+  { t: 'Quote & timeline', d: 'I scope it and send back a fixed price and a delivery window. No surprises.' },
+  { t: 'Deposit & sketch', d: 'A 50% deposit starts the work. You approve a sketch before I render.' },
+  { t: 'Revisions & delivery', d: 'Two revision rounds are included. Final files arrive at full resolution on delivery.' },
+];
+---
+<Base title="Commissions — Isaiah Gilliland" current="Commissions" description="Commission custom art from Isaiah Gilliland — illustration, concept art, 3D, and rigging.">
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow reveal r1">Commissions</p>
+      <h1 class="reveal r2">Let's make something.</h1>
+      <p class="lede reveal r3">Custom art, made to order — illustration, concept work, 3D, and rigging. Twenty-five years of practice pointed at whatever you have in mind. <span class="avail-inline"><span class="pulse"></span> Currently open.</span></p>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap">
+      <p class="svc-label">What you can commission</p>
+      <div class="svc-list">
+        {services.map((s) => (
+          <div class="svc">
+            <div class="svc-head">
+              <h3>{s.name}</h3>
+              <span class="svc-price">{s.price}<small>{s.note}</small></span>
+            </div>
+            <p>{s.desc}</p>
+          </div>
+        ))}
+      </div>
+      <p class="svc-foot">Prices are starting points and scale with complexity, size, and use. For larger or ongoing work, I also book by the day at <strong>$600/day</strong>. Personal use is included; commercial and resale licensing is quoted per project.</p>
+
+      <div class="budget-note">
+        <p><strong>A note on budget.</strong> These rates are a starting point, not a wall. If you're a small indie team &mdash; or the project is just genuinely interesting &mdash; I'm flexible. I'd rather help make something I care about than price a good project out of reach; a limited budget shouldn't be the reason it doesn't happen. Tell me what you're working with, and we'll find something that works.</p>
+      </div>
+
+      <div class="how">
+        <p class="svc-label">How it works</p>
+        <ol class="steps">
+          {steps.map((s) => (
+            <li><span class="step-t">{s.t}</span><span class="step-d">{s.d}</span></li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="commission-cta">
+        <p>Have something in mind?</p>
+        <a class="cta-btn" href="mailto:gilliland.isaiah@outlook.com?subject=Commission%20inquiry">Start a commission <span class="arrow">&rarr;</span></a>
+        <p class="cta-sub">Or email me directly at gilliland.isaiah@outlook.com</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .svc-label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin: 0 0 1.2rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--hairline); }
+  .svc-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+  @media (max-width: 720px) { .svc-list { grid-template-columns: 1fr; } }
+  .svc { border: 1px solid var(--hairline); background: var(--surface); padding: 1.4rem 1.5rem; transition: border-color .25s ease; }
+  .svc:hover { border-color: var(--hairline-2); }
+  .svc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+  .svc h3 { font-family: var(--font-sans); font-weight: 600; font-size: 1.15rem; margin: 0; letter-spacing: -0.005em; }
+  .svc-price { font-family: var(--font-mono); font-size: 0.92rem; color: var(--gold-bright); white-space: nowrap; text-align: right; }
+  .svc-price small { display: block; font-size: 0.62rem; letter-spacing: 0.06em; color: var(--faint); text-transform: uppercase; margin-top: 2px; }
+  .svc p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+  .svc-foot { margin: 1.6rem 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6; max-width: 74ch; }
+  .svc-foot strong { color: var(--ink); font-weight: 600; }
+  .budget-note { border-left: 2px solid var(--gold); background: rgba(201, 162, 75, 0.05); padding: 1.1rem 1.35rem; margin: 1.8rem 0 0; color: var(--ink); font-size: 0.95rem; line-height: 1.65; max-width: 74ch; }
+  .budget-note p { margin: 0; }
+  .budget-note strong { color: var(--gold-bright); font-weight: 600; }
+
+  .how { margin-top: clamp(2.5rem, 6vh, 4rem); }
+  .steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: 1.1rem; max-width: 70ch; }
+  .steps li { counter-increment: step; position: relative; padding-left: 3rem; }
+  .steps li::before { content: counter(step); position: absolute; left: 0; top: -0.1rem; width: 2rem; height: 2rem; display: grid; place-items: center; border: 1px solid var(--gold); color: var(--gold); font-family: var(--font-mono); font-size: 0.85rem; border-radius: 50%; }
+  .step-t { display: block; font-family: var(--font-sans); font-weight: 600; color: var(--ink); font-size: 1.02rem; margin-bottom: 0.2rem; }
+  .step-d { display: block; color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+
+  .commission-cta { margin-top: clamp(3rem, 7vh, 4.5rem); border-top: 1px solid var(--hairline); padding-top: 2.6rem; text-align: center; }
+  .commission-cta > p { color: var(--muted); margin: 0 0 1rem; font-size: 0.95rem; }
+  .cta-btn { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--font-sans); font-size: 1.02rem; color: var(--ink); border: 1px solid var(--gold); background: rgba(201,162,75,0.08); padding: 0.85rem 1.6rem; transition: background .25s ease; }
+  .cta-btn:hover { background: rgba(201,162,75,0.16); }
+  .cta-btn .arrow { color: var(--gold); }
+  .cta-sub { margin: 1rem 0 0; font-family: var(--font-mono); font-size: 0.78rem; color: var(--faint); letter-spacing: 0.03em; }
+
+  .avail-inline { display: inline-flex; align-items: center; gap: 0.5rem; margin-left: 0.4rem; color: var(--ink); font-size: 0.92rem; white-space: nowrap; }
+  .avail-inline .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 2.6s infinite; }
+</style>

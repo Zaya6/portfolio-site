@@ -1,0 +1,67 @@
+---
+import Base from '../layouts/Base.astro';
+import artData from '../data/art.json';
+import 'photoswipe/style.css';
+---
+<Base title="Art — Isaiah Gilliland" current="Art" description="Digital paintings, concept art, design, and 3D work by Isaiah Gilliland.">
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow reveal r1">Art</p>
+      <h1 class="reveal r2">Paintings, concepts, and worlds.</h1>
+      <p class="lede reveal r3">Digital painting, concept art, design, and 3D work. Click any image to view it full-size.</p>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap">
+      <div id="art-gallery" class="pswp-gallery">
+        {artData.map((cat) => (
+          <div class="art-section">
+            <p class="art-cat-label">{cat.label}</p>
+            <div class="art-cascade">
+              {cat.items.map((it) => (
+                <a class="art-item" href={it.src} data-pswp-width={it.w} data-pswp-height={it.h} target="_blank" rel="noreferrer">
+                  <img src={it.src} alt={cat.label} loading="lazy" />
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '#art-gallery',
+    children: 'a.art-item',
+    pswpModule: () => import('photoswipe'),
+    bgOpacity: 0.95,
+    initialZoomLevel: 'fit',
+    secondaryZoomLevel: 2,
+    maxZoomLevel: 4,
+  });
+  lightbox.init();
+</script>
+
+<style>
+  .art-section { margin-bottom: clamp(2.5rem, 6vh, 4rem); }
+  .art-cat-label {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold); margin: 0 0 0.2rem;
+    padding-bottom: 0.6rem; border-bottom: 1px solid var(--hairline);
+  }
+  .art-cascade { column-count: 3; column-gap: 1rem; margin-top: 1.2rem; }
+  @media (max-width: 900px) { .art-cascade { column-count: 2; } }
+  @media (max-width: 540px) { .art-cascade { column-count: 1; } }
+  .art-item {
+    display: block; break-inside: avoid; margin-bottom: 1rem;
+    border: 1px solid var(--hairline); overflow: hidden; background: var(--surface);
+    line-height: 0; transition: border-color .25s ease;
+  }
+  .art-item:hover { border-color: var(--gold); }
+  .art-item img { width: 100%; display: block; transition: transform .5s ease; }
+  .art-item:hover img { transform: scale(1.04); }
+</style>

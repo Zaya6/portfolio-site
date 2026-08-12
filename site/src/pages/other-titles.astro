@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import { everiTitles, everiTools } from '../data/everiTitles.js';
+---
+<Base title="Other Everi titles — Isaiah Gilliland" current="Work">
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="crumb reveal r1"><a href="/">Work</a> <span class="arrow">&rarr;</span> Other Everi titles</p>
+      <p class="eyebrow reveal r1" style="margin-top:1rem;">Everi &middot; Top Shelf Studio</p>
+      <h1 class="reveal r2">Other titles I worked on</h1>
+      <p class="lede reveal r3">Beyond the titles with their own pages here, I contributed to many more during my time at Everi &mdash; mostly VFX, particles, and 2D animation, with some rigging and art-pipeline work. Here's what I did on each.</p>
+      {everiTools.map((t) => <p class="tool-note reveal r3" set:html={t.replace(/—/g, '&mdash;')} />)}
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap">
+      <div class="titlelist reveal r3">
+        {everiTitles.map((t) => (
+          <div class="titlerow">
+            <img src={`/assets/other-titles/${t.slug}.jpg`} alt={t.title} loading="lazy" />
+            <div class="tr-body"><h4>{t.title}</h4><p>{t.desc}</p></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

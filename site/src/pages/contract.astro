@@ -1,0 +1,109 @@
+---
+import Base from '../layouts/Base.astro';
+
+const services = [
+  { name: 'Shaders & real-time VFX', desc: 'Custom shaders, material systems, and effects built for real-time targets — HLSL/GLSL, post-processing, and the math to back it up.' },
+  { name: 'Tools & pipeline automation', desc: 'Custom tooling that cuts the tedious parts of production — the kind of pipeline work that turns weeks of manual effort into a single automated pass.' },
+  { name: 'Rigging & 3D', desc: 'Production-ready character rigs, 3D modeling, and animation-ready assets across Maya, Blender, and Godot.' },
+  { name: 'Debugging & optimization', desc: 'Performance work and hard-problem debugging — GPU profiling, memory, and the bug nobody else can reproduce.' },
+  { name: 'Consulting & technical direction', desc: 'Advisory and planning work — scoping the technical-art side of a title, reviewing shaders and pipelines, setting asset specs and budgets, and helping a team unblock hard problems without necessarily doing all the hands-on work myself.' },
+  { name: 'Full game contracts', desc: 'End-to-end development — design, code, art, and ship — solo or leading a small team.' },
+];
+
+const steps = [
+  { t: 'Scope the problem', d: 'Tell me what you need, the constraints, and the timeline. I’ll tell you honestly whether I’m the right fit.' },
+  { t: 'Pick a model', d: 'Hourly, day rate, or a fixed quote after scoping — whatever fits the work best.' },
+  { t: 'Get to work', d: 'Regular check-ins and visible progress. Source and assets stay in your hands throughout.' },
+  { t: 'Clean handoff', d: 'Documented, maintainable delivery you and your team can build on — not a black box.' },
+];
+---
+<Base title="Contract — Isaiah Gilliland" current="Contract" description="Contract technical art and engineering — shaders, tools, pipelines, rigging, optimization, and full game development.">
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow reveal r1">Contract</p>
+      <h1 class="reveal r2">Available for contract work.</h1>
+      <p class="lede reveal r3">Senior technical art and engineering for studios and indie teams — shaders, tools, pipelines, rigging, and the hard problems in between. <span class="avail-inline"><span class="pulse"></span> Currently open.</span></p>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="wrap">
+      <p class="svc-label">What I take on</p>
+      <div class="svc-list">
+        {services.map((s) => (
+          <div class="svc">
+            <h3>{s.name}</h3>
+            <p>{s.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="rates">
+        <p class="svc-label">Rates</p>
+        <div class="rates-panel">
+          <div class="rate"><span class="rate-n">$95</span><span class="rate-u">/ hour</span></div>
+          <div class="rate"><span class="rate-n">$750</span><span class="rate-u">/ day</span></div>
+          <div class="rate"><span class="rate-n">Project</span><span class="rate-u">fixed quote after scoping</span></div>
+        </div>
+        <p class="rates-foot">Rates flex with scope and commitment — longer engagements and larger projects are negotiable. I’m happy to work hourly, by the day, or against a fixed quote, whichever gives you the most certainty. <strong>Consulting and advisory engagements</strong> — reviews, planning, and unblocking a stuck team — can be booked by the hour or as a short retainer.</p>
+        <div class="budget-note">
+          <p><strong>A note on budget.</strong> These rates are a starting point, not a wall. If you're a small indie team &mdash; or the project is just genuinely interesting &mdash; I'm flexible. I'd rather help make something I care about than price a good project out of reach; a limited budget shouldn't be the reason it doesn't happen. Tell me what you're working with, and we'll find something that works.</p>
+        </div>
+      </div>
+
+      <div class="how">
+        <p class="svc-label">How it works</p>
+        <ol class="steps">
+          {steps.map((s) => (
+            <li><span class="step-t">{s.t}</span><span class="step-d">{s.d}</span></li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="commission-cta">
+        <p>Have a project or a problem?</p>
+        <a class="cta-btn" href="mailto:gilliland.isaiah@outlook.com?subject=Contract%20inquiry">Discuss a contract <span class="arrow">&rarr;</span></a>
+        <p class="cta-sub">Or email me directly at gilliland.isaiah@outlook.com</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .svc-label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin: 0 0 1.2rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--hairline); }
+  .svc-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+  @media (max-width: 720px) { .svc-list { grid-template-columns: 1fr; } }
+  .svc { border: 1px solid var(--hairline); background: var(--surface); padding: 1.4rem 1.5rem; transition: border-color .25s ease; }
+  .svc:hover { border-color: var(--hairline-2); }
+  .svc h3 { font-family: var(--font-sans); font-weight: 600; font-size: 1.15rem; margin: 0 0 0.45rem; letter-spacing: -0.005em; }
+  .svc p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+
+  .rates { margin-top: clamp(2.5rem, 6vh, 4rem); }
+  .rates-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  @media (max-width: 620px) { .rates-panel { grid-template-columns: 1fr; } }
+  .rate { border: 1px solid var(--hairline); background: var(--surface); padding: 1.6rem 1.5rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .rate-n { font-family: var(--font-serif); font-variation-settings: "opsz" 120; font-weight: 400; font-size: 2.2rem; line-height: 1; color: var(--gold-bright); }
+  .rate-u { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .rates-foot { margin: 1.6rem 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6; max-width: 74ch; }
+  .rates-foot strong { color: var(--ink); font-weight: 600; }
+  .budget-note { border-left: 2px solid var(--gold); background: rgba(201, 162, 75, 0.05); padding: 1.1rem 1.35rem; margin: 1.8rem 0 0; color: var(--ink); font-size: 0.95rem; line-height: 1.65; max-width: 74ch; }
+  .budget-note p { margin: 0; }
+  .budget-note strong { color: var(--gold-bright); font-weight: 600; }
+
+  .how { margin-top: clamp(2.5rem, 6vh, 4rem); }
+  .steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: 1.1rem; max-width: 70ch; }
+  .steps li { counter-increment: step; position: relative; padding-left: 3rem; }
+  .steps li::before { content: counter(step); position: absolute; left: 0; top: -0.1rem; width: 2rem; height: 2rem; display: grid; place-items: center; border: 1px solid var(--gold); color: var(--gold); font-family: var(--font-mono); font-size: 0.85rem; border-radius: 50%; }
+  .step-t { display: block; font-family: var(--font-sans); font-weight: 600; color: var(--ink); font-size: 1.02rem; margin-bottom: 0.2rem; }
+  .step-d { display: block; color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+
+  .commission-cta { margin-top: clamp(3rem, 7vh, 4.5rem); border-top: 1px solid var(--hairline); padding-top: 2.6rem; text-align: center; }
+  .commission-cta > p { color: var(--muted); margin: 0 0 1rem; font-size: 0.95rem; }
+  .cta-btn { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--font-sans); font-size: 1.02rem; color: var(--ink); border: 1px solid var(--gold); background: rgba(201,162,75,0.08); padding: 0.85rem 1.6rem; transition: background .25s ease; }
+  .cta-btn:hover { background: rgba(201,162,75,0.16); }
+  .cta-btn .arrow { color: var(--gold); }
+  .cta-sub { margin: 1rem 0 0; font-family: var(--font-mono); font-size: 0.78rem; color: var(--faint); letter-spacing: 0.03em; }
+
+  .avail-inline { display: inline-flex; align-items: center; gap: 0.5rem; margin-left: 0.4rem; color: var(--ink); font-size: 0.92rem; white-space: nowrap; }
+  .avail-inline .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 2.6s infinite; }
+</style>

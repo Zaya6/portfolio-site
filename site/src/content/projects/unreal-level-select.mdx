@@ -1,0 +1,45 @@
+---
+title: "Unreal Level Select"
+category: "Personal · Tech Demo"
+group: "personal"
+cover: "unreal-level-select"
+role: "Solo developer"
+year: "2018"
+stack: "Unreal · Blueprints · Materials"
+summary: "A tech demo built while learning Unreal Engine, porting BoxByte and focusing on a level-select system created entirely in Blueprints — including a floating grid-line material and the camera logic — which changed how I thought about visual programming."
+order: 11
+---
+
+<Video id="I6UmMsD6l2c" />
+
+Around 2018 I decided it was time to learn Unreal Engine, and I fell for the toolset almost immediately. I wanted to build something simple to get my bearings, and ended up porting my existing game, BoxByte, into it. Most of that time went into the level-select system you can see in the video, which is what this demo is really about.
+
+## Built entirely in Blueprints
+
+All of the logic in this level select is created entirely in Blueprints. Building it taught me a great deal about the system and broke a longstanding bias I had held against visual programming, which I had always assumed was the inferior option. I still feel most comfortable inside a text editor, but I came away with real appreciation for how much power Blueprints put within reach.
+
+<Media src="/assets/projects/unreal-level-select/m1.jpg" alt="Unreal Level Select media" />
+
+## Floating grid-line material
+
+The material editor was one of the biggest parts of the experience for me. Building shaders as a node graph made the processes underneath them far easier to visualize than I had expected. The floating grid lines in the scene above come from a material I authored in that editor; below is the graph itself.
+
+<Media src="/assets/projects/unreal-level-select/m2.jpg" alt="Unreal Level Select media" />
+
+## Selector focus and UI
+
+Each levelSelector handles its own interaction. This first graph sets the view to focus on a selector when it is clicked and updates the UI to match.
+
+<Media src="/assets/projects/unreal-level-select/m3.jpg" alt="Unreal Level Select media" />
+
+## Auto-focus
+
+A designated selector can be focused automatically: when its autoActivate boolean is set to true, this graph brings the view to it without requiring a click.
+
+<Media src="/assets/projects/unreal-level-select/m4.jpg" alt="Unreal Level Select media" />
+
+## PlayerController camera movement
+
+Camera movement lives in the level_select PlayerController. This graph moves the view to whichever level has been clicked, carrying the player between selectors.
+
+<Media src="/assets/projects/unreal-level-select/m5.jpg" alt="Unreal Level Select media" />

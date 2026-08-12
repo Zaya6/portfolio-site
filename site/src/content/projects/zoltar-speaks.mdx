@@ -1,0 +1,25 @@
+---
+title: "Zoltar Speaks"
+category: "Everi · Technical Art"
+group: "everi"
+cover: "zoltar-speaks"
+role: "Technical Artist"
+year: "2022–2025"
+stack: "Spine · Blender · Photoshop · Trapcode Particular · After Effects · JavaScript"
+summary: "My first title as a Technical Artist at Everi's Top Shelf Studio, where I owned the effects work end to end. Alongside the bonus VFX, I built a custom pipeline — an After Effects extension written in JavaScript — that carried Spine animations into our in-house engine, including a keyframe-interpolation algorithm that made the two tools agree."
+order: 3
+---
+
+<Video id="7yTmfoUj3GY" />
+
+Zoltar Speaks was my first title as a Technical Artist at Everi's Top Shelf Studio. I owned the effects work end to end — the look of every bonus, and the pipeline that carried the animation from authoring into the engine.
+
+## Bonus effects
+
+Each bonus received its own effect, built on the engine's particle system, including a black hole for the red bonus. Most began as smoke simulations in Blender, refined and cut into spritesheets in Photoshop, with additional passes baked out of Trapcode Particular before being implemented in the engine as particles. Working across several tools kept each bonus visually distinct rather than a variation on the one before it.
+
+## A Spine-to-engine animation pipeline
+
+The larger effort was a pipeline for moving Spine animations into After Effects and, from there, into our in-house engine. I built it as an After Effects extension in JavaScript, which required a working knowledge of the Spine runtimes and JSON export format alongside the After Effects API in order to bridge the two reliably.
+
+Much of this was undocumented, so a significant portion came down to reverse engineering. The most difficult problem was keyframe interpolation: Spine's curves did not match After Effects' defaults, causing the animation to drift as it crossed between them. I developed an algorithm that matched Spine's interpolation and baked each animation down to individual keyframes — accurate enough that the two editors aligned, allowing animators to work in Spine and rely on the result in-engine.

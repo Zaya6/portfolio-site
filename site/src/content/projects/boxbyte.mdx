@@ -1,0 +1,44 @@
+---
+title: "BoxByte"
+category: "Personal · Game"
+group: "personal"
+cover: "boxbyte"
+role: "Solo developer"
+stack: "Unity · C# · Blender · Inkscape"
+summary: "An action arcade game with no attacking, built solo in Unity and C# and released on itch.io. Inspired by Ikaruga, it runs on a color-matching mechanic, custom Blender assets, and destruction physics baked into animation — my first real engine project."
+order: 9
+---
+
+<Video id="ImbUSs2fKzY" />
+
+BoxByte is an action arcade game with no attacking, built solo in Unity and C# and released on itch.io. I set out to make a fun action game without the mechanic that usually defines the genre — if you take away attacking, how does it still read as action? That question was the seed of the project, and, as most projects do, it grew well past what I first pictured.
+
+## A color-based core
+
+I wanted the game to rest on a single clear mechanic. Taking inspiration from Ikaruga, one of my favorites, I made it color-based: three colors — RED, BLUE, and GREEN — where matching colors are friendly and opposing colors hurt you. I set the whole thing inside the connections of a network the player is trying to escape.
+
+## The tunnel
+
+The core of the game is a digital tunnel that turns and twists as the player moves through it. It is built from a simple cylinder with its origin centered on the play stage, rotated to fake the effect of the tunnel turning. Each gate was modeled in Blender with albedo and emission maps to get its look in-game, and I used Inkscape to design the energy lines running across every stage.
+
+## Destruction simulations
+
+I had been experimenting with destruction simulations in Blender, and they carry two of the game's key moments: the death effect and the shattering glass that plays between stages. Blender simulated the physics of the objects breaking apart, and I baked those simulations down into animations used directly in the game. Because the mechanics themselves stayed simple, most of the work landed in content creation, playtesting, and balancing.
+
+<Media type="video" src="/assets/projects/boxbyte/m1.mp4" poster="/assets/projects/boxbyte/m1.jpg" />
+
+<Media type="video" src="/assets/projects/boxbyte/m2.mp4" poster="/assets/projects/boxbyte/m2.jpg" />
+
+## UI and HUD
+
+This was my first time building a UI, and it taught me a lot. I settled on something fairly traditional to lean on the conventions players already know, then made it feel distinct by adding a sprite animation to any highlighted button — I created that animation in Blender by having a 3D plane dissolve into darkness and rendering it out as image sequences. The HUD started out more ambitious, with real 3D depth, but I worried that would get in the way of reading it, so I pulled it back to something minimal and purely functional. In hindsight I would aim for the middle ground: functional and distinct at the same time.
+
+<Media src="/assets/projects/boxbyte/m3.jpg" alt="BoxByte media" />
+
+## What I took from it
+
+BoxByte was my first game in a full engine, and it opened a lot up. I ended up spending six years in Unity, and its concepts — components chief among them — became second nature. 3D modeling and animation fit Unity well, the simple retro art was a good way in, and the work I did hand in hand with Blender has paid dividends ever since. Designing a UI and HUD for the first time, through many revisions including that depth-based 3D HUD, left me with a real respect for UI/UX; it took a much larger slice of development than I expected and overturned a lot of the assumptions I came in with.
+
+## A lesson in version control
+
+About halfway through development, a serious bug in the Unity editor wiped out every line of code in the project. I was heartbroken, and it took me three months to open it again. When I did, I treated it as a chance to rebuild everything at higher quality — and I came away determined to learn and use Git from that point on.

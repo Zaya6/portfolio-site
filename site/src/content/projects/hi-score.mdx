@@ -1,0 +1,34 @@
+---
+title: "Hi-Score"
+category: "Everi · Technical Art"
+group: "everi"
+cover: "hi-score"
+role: "Technical Artist"
+year: "2022–2025"
+stack: "Unity · DOTS · C# · Blender · After Effects · Photoshop · Trapcode Particular"
+summary: "A pachinko slot title whose results had to be provably fair. I built Oatari, a deterministic physics simulator that pre-computed every possible ball path and gathered enough animation — roughly a hundred permutations per outcome — to keep every result auditable while still looking convincingly random."
+blurb: "I built Oatari, a deterministic pachinko physics simulator — provably fair results that still look convincingly random."
+order: 5
+---
+
+<Video id="JmZHulIvFOU" />
+
+I joined Hi-Score early in development because its requirements were unusual: the goal was to bring pachinko into a slot-game format. Pachinko presents a difficult regulatory problem, since results must be mathematically provable as fair — you cannot simply drop balls onto pegs with a physics engine and tally the outcome. The solution we settled on was a purpose-built tool to generate and bake hundreds of animations covering every possible ball path. That was the tool I was brought on to build, and it became Oatari, named for the Japanese word for "jackpot."
+
+## Oatari
+
+At its core, Oatari is a deterministic physics simulator for pachinko balls, built in Unity on the then newly released DOTS framework. Determinism was the entire point: for the game to be provably fair, every outcome had to be reproducible and traceable rather than left to a live physics engine. Running under DOTS, it simulated the board with thousands of balls in parallel, fast enough to explore the enormous space of possible paths.
+
+It also doubled as the board editor. Designers worked directly in the Unity project to place pegs and other elements, whose transforms were exported out. Once a board was set and the simulation run, Oatari automatically detected and mapped every viable path a ball could travel from each spawn point to each endpoint, then exported that map to validate the math — which could occasionally call for outcomes that were not physically possible on the board.
+
+The part I am most proud of is how it reconciled provable fairness with the feeling of real, unpredictable physics. From the path map, Oatari worked out its own requirements — precisely which animations it still needed to collect — and then gathered enough of them that a single fair result could be presented in roughly a hundred different ways. Each predetermined outcome had on the order of 100 alternative path permutations to draw from, selected at random at runtime, so the balls looked convincingly random while the underlying result stayed deterministic and auditable.
+
+The tool stayed flexible throughout: a board could be changed live and its requirements would update to match, and it supported segmented paths that could be interrupted and resumed later — which drove the ball-splitter feature and could just as easily send a ball into the background. For every path, Oatari captured the full animation along with position, speed, and collision data for custom effects and sound events, exporting the result as JSON for our custom game engine.
+
+## Effects and art
+
+Beyond Oatari, I stayed active across the rest of the game's development. I created 3D spinning effects in Blender and After Effects, and built a range of special effects in Trapcode Particular, including the splitter effect shown in the video.
+
+## The nebula background
+
+The piece I ended up hearing the most about was the background. I digitally painted the game's nebula by hand and animated it in After Effects. It resonated more than I expected — of everything on the title, the background was the thing people kept coming back to and talking about, and it remains some of the work from Hi-Score I'm most fond of.

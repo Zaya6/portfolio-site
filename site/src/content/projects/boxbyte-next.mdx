@@ -1,0 +1,278 @@
+---
+title: "BoxByte Next"
+category: "Personal · Game"
+group: "personal"
+cover: "boxbyte-next"
+role: "Solo developer"
+year: "2020"
+stack: "Godot · GDScript · GLSL · Blender"
+summary: "A 2020 revisit of BoxByte, rebuilt in Godot to push the engine's 3D capabilities, with custom GLSL shaders throughout and a deeper hidden narrative. An ambitious personal project that remains unfinished."
+order: 7
+---
+
+<Video id="nTbsE7GExKs" />
+
+## A personal revisit, built in Godot
+
+In 2020 I had some time to myself and went back to revisit earlier work. BoxByte was one I always wanted to make more feature-complete than the original release, but lack of time and development roadblocks had kept me from doing more. It was always meant to have multiple levels, and even secrets hidden in the game to be discovered, neither of which made it into the first version. This revisit was an ambitious one, and I took it a long way — but it remains unfinished.
+
+By then I had built games and systems in three engines — Unity, Unreal, and Godot — and was confident working in each. Unreal felt like overkill for a game as simple as BoxByte, and I was curious how Godot would handle 3D. That curiosity turned into a goal I hadn't planned on: pushing the Godot engine to its limit. This version would also carry over the secret story from the earlier one, trading some of the original narrative's subtlety for more that players could search out — the origins of Box, the character at the center of BoxByte.
+
+Several pieces converged to give BoxByte its characteristic look. The background was an independent scene, rendered in advance so a level's aesthetic could be switched dynamically. Separating the level logic from the level manager was a challenge in itself: it had to check each level's completion requirements and automate the transition into the next. On top of that sat a set of custom shaders — written in Godot's GLSL — covering the menu, the backgrounds, the gameplay, and everything in between.
+
+<Media type="video" src="/assets/projects/boxbyte-next/m1.mp4" poster="/assets/projects/boxbyte-next/m1.jpg" />
+
+## Ethos shader
+
+Ethos, the antagonist, needed to read as something metaphysical rather than solid. The shader constantly scrolls the screen-space reflection UVs over time and drives the surface with a Fresnel term, giving it a negative-glow rim I was happy with and a transparency that falls off toward the edges.
+
+```glsl
+shader_type spatial;
+render_mode cull_disabled;
+uniform vec4 albedo: hint_color;
+uniform vec4 glowColor: hint_color;
+uniform sampler2D reflections;
+float fresnel(float amount, vec3 normal, vec3 view) {
+ return pow((1.0 - clamp(dot(normalize(normal), normalize(view)), 0.0, 1.0 )), amount);
+}
+void fragment() {
+ // Constantly translate UV to make Ethos look metaphysical
+ vec2 refUV = SCREEN_UV + TIME * 0.01;
+ vec4 refl = texture(reflections, refUV);
+ float fres = fresnel(3, NORMAL, VIEW);
+
+ ALBEDO = albedo.rgb * refl.rgb;
+ // this makes a cool negative glow like effect that I really like
+ EMISSION =  -refl.rgb*0.5 + glowColor.rgb * fres*2.0;
+ ALPHA = 1.0 - fresnel(2.0, NORMAL, VIEW);
+}
+```
+
+## Ethos digital ribbon shader
+
+A companion effect for Ethos: two textures — a band of text and a ribbon — scroll in opposite directions across the surface, tinted by a colorize map, with the same Fresnel falloff tying it back to the main Ethos look.
+
+```glsl
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D textImage;
+uniform sampler2D ribbonImage;
+uniform sampler2D colorize;
+float fresnel(float amount, vec3 normal, vec3 view)
+{
+ return pow((1.0 - clamp(dot(normalize(normal), normalize(view)), 0.0, 1.0 )), amount);
+}
+void fragment() {
+ // Text and ribbon move in opposite directions
+ vec2 uvText = vec2(UV.x+TIME*0.03, UV.y);
+ vec2 uvRibbon = vec2(UV.x+TIME*-0.03, UV.y);
+
+ float fres = fresnel(3.0, NORMAL, VIEW);
+ vec4 text = texture(textImage, uvText);
+ vec4 ribbon = texture(ribbonImage, uvRibbon);
+ vec4 color = texture(colorize, UV);
+
+ ALBEDO = (ribbon.rgb + text.rgb) * color.rgb * (1.0-fres);
+ ALPHA = fres + ribbon.a + text.a;
+}
+```
+
+## Story and narrative design
+
+The story centers on a rogue AI scientist turned ethical hacker, out to take down the system that burned him. He discards his old identity, renames himself Ethos, and sets a plan in motion to seize the US missile silos, destroy the corrupted world, and remake it as he sees fit. And none would guess the instrument he chose to orchestrate it: you.
+
+You are an AI he calls Box — a fitting name for what you really are, a package carrying a dangerous worm meant to infect the US defense system and bring it to its knees. Paired with a new exploit Ethos has devised, you travel to the defense network's major server hubs and compromise each one to gain the elevated privileges needed to reach the next, eventually taking control of the whole network and turning its weapons on the beast itself.
+
+What he could not predict was what you would become, and how that would unsettle his plans. As players progress they meet two bosses, Logos and Pathos, and after each is defeated a small part of its neural network is integrated into yours. Over the course of the game the player gains the ability to use logic, unlocking dialog options with Ethos that were closed off before; defeating Pathos grants the ability to question your own motives, and Ethos himself.
+
+## Levels and secrets
+
+This time I set out to document as much as I could before writing any code. I had the whole progression of the story gathered, along with each level designed in 2D and its secret. I wanted secrets to be a real system in the game — something that rewarded players for looking. Each level had its own secret, surfaced in the menu of the Level Select scene.
+
+The secret itself takes the form of a snippet — a news article or transcript that gives players a glimpse of events unfolding in the real world. A couple of examples from the design document:
+
+<Media src="/assets/projects/boxbyte-next/m2.jpg" alt="BoxByte Next media" />
+
+```
+Level 1 secret
+White House Public Relations have signaled that they hope the process of disolving the FBI will be completed by the end of the year. The Department of Homeland Secerety is expected to take over its responcibilities. Many have voiced concerns over this unprecedented move but Secretary Mathews made assurances saying "Americans have nothing to fear if they have nothing to hide." Could this move be related to the recent gutting of privacy laws that this reporter...
+Level 4 secret
+A Dollor Common in Dairy, Mi. is now the site of the 3rd largest mass shooting since just earlier this year. And now a newly released police report depicts a chilling story of the events that unfolded that day. Sometime around 2AM, 1 man and 1 woman in a pickup truck pulled up to the entrance of the store armed with a shotgun and a semi-automatic rifle. The two demanded to see the establishment&#x27;s basement believing the site was part of an immigrant smuggling operation. Blueprints show that no such basement exists and can't exist because of high ground water in the area.
+```
+
+The levels climb in difficulty, each adding new barriers and enemies on top of the last. A level's style also shifts subtly toward the boss waiting at the end of it: Logos's levels are built from basic shapes, Pathos's from world symbols, and the run up to the final boss, Ethos, from things that look manmade alongside molecular structures.
+
+<Media src="/assets/projects/boxbyte-next/m3.jpg" alt="BoxByte Next media" />
+
+<Media src="/assets/projects/boxbyte-next/m4.jpg" alt="BoxByte Next media" />
+
+<Media src="/assets/projects/boxbyte-next/m5.jpg" alt="BoxByte Next media" />
+
+## Background manager
+
+The background manager is what makes the dynamic aesthetic switching work. It keeps two viewports and cross-fades between them: a new background scene is instanced into the idle viewport, its render target faded in while the current one fades out over a cubic tween, the indexes are swapped, and a cleanup timer frees the old scene once it's hidden. Level intros play into the first viewport directly, since nothing needs to transition in front of them. Background and intro IDs both come from the level's JSON.
+
+```gdscript
+extends Control
+## List of intros
+var intros = {
+ "square_port_intro" : "res://background/intros/square_port_intro.tscn"
+}
+## List of backgrounds
+var backgrounds = {
+ "flakefield" : "res://background/flakefield.tscn",
+ "square_tunnel" : "res://background/Square_tunnel.tscn"
+}
+onready var tween : Tween = $tween
+var index = 0
+## Begin by setting rendering viewports to window size
+func _ready() -> void:
+ $Viewport0.set_size(OS.window_size)
+ $Viewport1.set_size(OS.window_size)
+## remove all children from passed in viewport index to prepare it for a new scene
+func _clearViewport(ind) -> void:
+var viewportScene = get_node("Viewport"+str(ind)).get_children();
+for child in viewportScene:
+  child.queue_free()
+## Receives a packedScene and loads it, then transitions to the viewport
+func _flipBackground(background:PackedScene):
+ #get the next index and set it to the appropriate values
+ var nextIndex = 0 if index == 1 else 1
+
+ var nextViewport : Viewport = get_node("Viewport"+str(nextIndex))
+ nextViewport.add_child(background.instance())
+
+ var nextBuffer : TextureRect = get_node("buffer"+str(nextIndex))
+ nextBuffer.show()
+
+ # transition the next render target by interpolating alpha
+ tween.interpolate_property(nextBuffer, "modulate", Color(1,1,1,0), Color(1,1,1,1),
+ 2,Tween.TRANS_CUBIC, Tween.EASE_IN)
+
+ # transition away the current render target, switch indexes, start cleanup timer
+ var oldBuffer : TextureRect = get_node("buffer"+str(index))
+ tween.interpolate_property(oldBuffer, "modulate", Color(1,1,1,1), Color(1,1,1,0),
+ 2,Tween.TRANS_CUBIC,Tween.EASE_OUT)
+ tween.start()
+ $cleanup.start()
+
+ index = nextIndex
+## Gets an introID string, sourced from level JSON, and plays it. Swaping or transitioning is unnecesary
+## because intro is the first scene played
+func play_level_intro(introID:String) -> void:
+ var introBack : PackedScene = load(intros[introID])
+ $Viewport0.add_child(introBack.instance())
+## Gets a backgroundID string, sourced from level JSON, and loads a packedScene.
+## Begins transition to new background
+func changeBackground(backgroundID:String):
+ if not backgroundID.empty():
+  var back : PackedScene = load(backgrounds[backgroundID])
+  _flipBackground(back)
+## After a viewport has faded, this cleans it up
+func _on_cleanup_timeout():
+ var lastIndex = 0 if index == 1 else 1
+ var oldBuffer : TextureRect = get_node("buffer"+str(lastIndex))
+ oldBuffer.hide()
+ _clearViewport(lastIndex)
+```
+
+<Media type="video" src="/assets/projects/boxbyte-next/m6.mp4" poster="/assets/projects/boxbyte-next/m6.jpg" />
+
+## Level shader
+
+With the 2D designs in hand, I wrote a shader to display them in-game as holographic projections. Each level represents a gate in the firewall the player passes through, so I wanted it to read like a digital projection of software — and, honestly, to look badass, which I think it does. It uses a parallax offset against the camera to draw the level textures several times over, creating a sense of depth. There's no other trick and no outside shader scripts; it's all rendered on a single plane in-game.
+
+It's written in Godot's own shader language, which is very close to GLSL ES 3.0.
+
+## Level shader code
+
+```glsl
+shader_type spatial;
+render_mode cull_disabled, specular_schlick_ggx, ambient_light_disabled;
+uniform vec4 color : hint_color = vec4(1);
+uniform sampler2D level;
+uniform sampler2D specTexture;
+uniform sampler2D shatterGlow;
+uniform float shatter = 0.0;
+uniform float holoSeperation = 0.005;
+uniform float iterations = 5.0;
+uniform float shine = 0.2;
+uniform float glow = 0.2;
+void fragment() {
+ // Create hologram by creating parallax effect and sampling level texture at lower levels
+ vec4 holo;
+ for ( float i = iterations; i > 0.0; i--) {
+  vec2 offset = vec2(i * -holoSeperation* VIEW.x, i * holoSeperation * VIEW.y);
+  float opacityBase = iterations*0.06;
+  float opacitySteps = opacityBase/iterations*0.1;
+  holo += ( opacityBase - i * opacitySteps) * texture(level, offset + UV);
+ }
+ // mix main level texture on top to make it stand out stronger
+ vec4 game = texture(level, UV);
+ vec4 holoGame = vec4(mix(holo.rgb, game.rgb, game.a), max(game.a, holo.a));
+
+ // Create specular with texture to add additional detail
+ vec4 s = texture(specTexture, UV*5.0);
+ vec2 specular = vec2(max(0.0, s.b-game.a)*10.0, max(0.0,s.b-game.a) * shine);
+ // make the outer ring glow more by sampling texture at low lod
+ vec4 glowRing = textureLod(level,UV,6);
+ // make the specular details glow
+ vec4 specGlow = mix( vec4(0), specular.xxxx, glowRing.a);
+ specGlow.a = mix( 0.0, specular.y, specGlow.r);
+
+ // Glowing for when level shatters
+ vec4 shtr = vec4(0);
+ if (shatter > 0.0) {
+  shtr = texture(shatterGlow, UV);
+ }
+
+ ALBEDO = color.rgb;
+ ALPHA = mix(specular.y, holoGame.a, holoGame.a);
+ EMISSION = color.rgb * mix( specGlow.rgb*glow, game.rgb*glow+holo.rgb, holoGame.a);
+ SPECULAR = specular.x;
+}
+```
+
+## UI and menus
+
+The UI got serious attention this round. I also started this game with a new methodology in mind: treat every individual part as though it were its own project.
+
+For the Level Select I wanted something out of a cyberpunk world, vaguely reminiscent of the N64/PS1 era of gaming but with modern shaders. It's set inside the physical world, Ethos's actual lair: an abandoned water tower in a rundown corner of the industrial district.
+
+<Media src="/assets/projects/boxbyte-next/m7.jpg" alt="BoxByte Next media" />
+
+I wanted this space to carry the story and lore too, with environment art added over time to hint at the world outside. By the last level, players would find Ethos himself in his human form, hanging from the ceiling by hundreds of wires threaded into his flesh.
+
+<Media type="video" src="/assets/projects/boxbyte-next/m8.mp4" poster="/assets/projects/boxbyte-next/m8.jpg" />
+
+For the HUD I wanted something that fit the game while carrying overlay elements for the hacking. Along the bottom is a connection meter that serves as health, driven by a custom shader that changes its lines and color with the character's state. At the top, another custom shader shows your danger level, ringed by live stats — the game's actual memory usage, the vertex count in the scene, the framerate, and the name of the computer it's running on. On the left is an indicator for bytes remaining, and on the right, the player's score.
+
+## UI health shader code
+
+```glsl
+shader_type canvas_item;
+uniform vec4 ui_Color : hint_color;
+void fragment(){
+ vec4 col = ui_Color;
+
+ // make a gradient
+ col.a = col.a - (col.a * UV.x) + 0.2;
+
+ //curves
+ float curve_col = col.a;
+ //curve 1
+ float curve = (.2-.1*sin(TIME+2.5) ) * sin((15.25 * UV.x) + (-2.5 * TIME+2.5));
+ float c1 = max(curve_col - smoothstep(1.0 - clamp( abs(0.5 - (curve + UV.y)) * 1.0, 0.0, 1.0), 1.0, 0.99), 0.);
+ col += c1*0.5;
+ //curve 2
+ curve = (.15-.08*sin(TIME) ) * sin((15.25 * UV.x) + (-2.0 * TIME));
+ float c2 = max(curve_col - smoothstep(1.0 - clamp( abs(0.5 - (curve + UV.y)) * 1.0, 0.0, 1.0), 1.0, 0.99), 0.) * 0.5;
+ col -= c2;
+
+ COLOR = col;
+}
+```
+
+<Media type="video" src="/assets/projects/boxbyte-next/m9.mp4" poster="/assets/projects/boxbyte-next/m9.jpg" />
+
+<Media type="video" src="/assets/projects/boxbyte-next/m10.mp4" poster="/assets/projects/boxbyte-next/m10.jpg" />

@@ -1,0 +1,157 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Card from '../components/Card.astro';
+
+const projects = await getCollection('projects');
+const bySort = (a, b) => a.data.order - b.data.order;
+const studio = projects.filter((p) => p.data.group === 'studio').sort(bySort);
+const everi = projects.filter((p) => p.data.group === 'everi').sort(bySort);
+const omniarts = projects.filter((p) => p.data.group === 'omniarts').sort(bySort);
+const personal = projects.filter((p) => p.data.group === 'personal').sort(bySort);
+const games = personal.filter((p) => !/Tech Demo/.test(p.data.category));
+const demos = personal.filter((p) => /Tech Demo/.test(p.data.category));
+---
+<Base title="Isaiah Gilliland — Technical Artist &amp; Digital Artist" current="Work">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow reveal r1">Technical Artist &middot; Digital Artist</p>
+        <h1 class="thesis reveal r2">Finding the purest form of a single idea &mdash; in <em>code</em>, in <em>art</em>, in <em>story</em>.</h1>
+        <p class="subline reveal r3">Twenty-five years of practice, none of it in a classroom. I <strong>write the shaders</strong>, <strong>build the tools</strong>, and <strong>paint the worlds</strong> &mdash; then make them move. One sensibility, from pixel to pipeline.</p>
+        <div class="doors reveal r4">
+          <a class="door primary" href="/commissions">Commission art <span class="arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="door" href="/contract">Hire for a contract <span class="arrow" aria-hidden="true">&rarr;</span></a>
+        </div>
+        <p class="skim-link reveal r4">In a hurry? <a href="/portfolio">Skim the quick version <span class="arrow" aria-hidden="true">&rarr;</span></a></p>
+      </div>
+      <div class="flourish reveal r3" aria-hidden="true">
+        <svg viewBox="0 0 400 420" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke="#3A342A" stroke-width="1">
+            <path class="draw" d="M60 350 L60 110 L200 40 L340 110 L340 350 L200 410 Z"></path>
+            <path class="draw d2" d="M60 110 L340 110 M200 40 L200 410 M60 350 L340 350"></path>
+            <path class="draw d2" d="M60 230 L340 230 M130 75 L130 380 M270 75 L270 380"></path>
+          </g>
+          <g stroke="url(#g)" stroke-width="2">
+            <path class="draw d3" d="M60 300 C 130 120, 270 120, 340 300"></path>
+            <path class="draw d3" d="M95 320 C 150 200, 250 200, 305 320"></path>
+          </g>
+          <circle class="draw d3" cx="200" cy="168" r="5" fill="#C9A24B" stroke="none"></circle>
+          <defs>
+            <linearGradient id="g" x1="60" y1="0" x2="340" y2="0" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#C9A24B"></stop><stop offset="1" stop-color="#E4C173"></stop>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="lbl">wireframe &rarr; form</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="proof">
+    <div class="wrap proof-inner">
+      <span><b>Light &amp; Wonder</b> &mdash; Kong: Skull Island</span>
+      <span class="dot" aria-hidden="true"></span>
+      <span><b>Everi</b> &mdash; Technical Artist IV</span>
+      <span class="dot" aria-hidden="true"></span>
+      <span><b>17+</b> shipped titles</span>
+      <span class="dot" aria-hidden="true"></span>
+      <span><b>Self-taught</b></span>
+    </div>
+  </div>
+
+  <section class="area pro">
+    <div class="wrap">
+      <div class="area-label"><p class="eyebrow">Professional Work</p></div>
+      <h2 class="area-title">Shipped at the studio.</h2>
+      <p class="area-sub">Technical art across Light &amp; Wonder and Everi &mdash; shaders, material systems, tools, rigging, and VFX built for real-time hardware targets.</p>
+
+      <div class="group">
+        <div class="studio-head"><h3>Light &amp; Wonder</h3><span class="role">Lead Technical Artist &middot; 2026</span></div>
+        <div class="cards">
+          {studio.map((p) => <Card project={p} />)}
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="studio-head"><h3>Everi &mdash; Technical Art</h3><span class="role">Technical Artist IV &middot; 2022&ndash;2025</span></div>
+        <div class="cards">
+          {everi.map((p) => <Card project={p} />)}
+          <a class="card" href="/other-titles">
+            <div class="plate"><img src="/assets/other-titles/smokin-hot-stuff-link.jpg" alt="More Everi titles" loading="lazy" /></div>
+            <div class="card-body"><span class="tag">Everi &middot; More titles</span><h3>Other titles I worked on</h3><p>Eleven more Everi titles I contributed to as a technical artist &mdash; VFX, particles, 2D animation, and pipeline work.</p><div class="meta"><span class="k">Count</span> 11 titles</div></div>
+          </a>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="studio-head"><h3>Omni-Arts</h3><span class="role">Lead Software Developer &middot; 2013&ndash;2016</span></div>
+        <div class="cards">
+          {omniarts.map((p) => <Card project={p} />)}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="area">
+    <div class="wrap">
+      <div class="area-label"><p class="eyebrow">Personal Projects</p></div>
+      <h2 class="area-title">Built for the love of it.</h2>
+      <p class="area-sub">Games, engines, and experiments &mdash; where the sensibility gets to run without a brief.</p>
+
+      <div class="group">
+        <div class="studio-head"><h3>Games &amp; Engines</h3><span class="role">Solo / indie</span></div>
+        <div class="cards">
+          <a class="card" href="#">
+            <div class="plate"><span class="lw-plate">In progress</span></div>
+            <div class="card-body"><span class="tag">Engine &middot; Roguelike</span><h3>dungeon</h3><p>A roguelike on a hand-built C++ engine &mdash; rendering, gameplay, and tools from scratch.</p><div class="meta"><span class="k">Stack</span> C++ &middot; SDL3 &middot; SDL_GPU</div></div>
+          </a>
+          {games.map((p) => <Card project={p} />)}
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="studio-head"><h3>Tech Demos</h3><span class="role">Experiments</span></div>
+        <div class="cards">
+          {demos.map((p) => <Card project={p} />)}
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Art background behind the hero — zoomed, covered, dark-gradient overlay for legibility.
+     Layout/height/content of the hero are untouched; this only paints behind it. */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('/assets/art/digital-paintings-02.jpg') center 28% / cover no-repeat;
+    transform: scale(1.2);
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(100deg, rgba(13, 11, 9, 0.42) 12%, rgba(13, 11, 9, 0.12) 100%);
+  }
+  .hero > .wrap {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 1), 0 2px 6px rgba(0, 0, 0, 0.95), 0 6px 22px rgba(0, 0, 0, 0.85);
+  }
+  .hero .door {
+    box-shadow: 0 12px 44px rgba(0, 0, 0, 0.8);
+  }
+  /* Soft dark pocket behind the flourish so the gold line-art pops off the art */
+  .hero .flourish {
+    background: radial-gradient(ellipse 66% 58% at 52% 46%, rgba(5, 4, 3, 0.85) 0%, rgba(5, 4, 3, 0.35) 52%, transparent 74%);
+  }
+  .hero .flourish svg {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 1)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.9));
+  }
+</style>
+

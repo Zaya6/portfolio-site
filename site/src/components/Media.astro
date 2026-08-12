@@ -1,0 +1,10 @@
+---
+const { src, type = 'img', poster, alt = '' } = Astro.props;
+---
+<figure class="content-media">
+  {type === 'video' ? (
+    <video src={src} poster={poster} autoplay muted loop playsinline preload="metadata"></video>
+  ) : (
+    <img src={src} alt={alt} loading="lazy" />
+  )}
+</figure>

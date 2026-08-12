@@ -1,0 +1,22 @@
+---
+const { current = '' } = Astro.props;
+const items = [
+  { label: 'Work', href: '/' },
+  { label: 'Portfolio', href: '/portfolio' },
+  { label: 'Art', href: '/art' },
+  { label: 'Shaders', href: '/shaders' },
+  { label: 'Commissions', href: '/commissions' },
+  { label: 'Contract', href: '/contract', hide: true },
+  { label: 'About', href: '/about', hide: true },
+];
+---
+<header class="bar">
+  <div class="wrap bar-inner">
+    <a class="mark" href="/" aria-label="Isaiah Gilliland — home">Isaiah&nbsp;<b>Gilliland</b></a>
+    <nav class="main" aria-label="Primary">
+      {items.map((i) => (
+        <a href={i.href} class:list={[{ current: i.label === current, 'nav-hide': i.hide }]}>{i.label}</a>
+      ))}
+    </nav>
+  </div>
+</header>

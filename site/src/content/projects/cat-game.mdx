@@ -1,0 +1,366 @@
+---
+title: "Cat Game"
+category: "Personal · Tech Demo"
+group: "personal"
+cover: "cat-game"
+role: "Solo developer"
+year: "2022"
+stack: "Unity · C# · Blender"
+summary: "A three-week Unity prototype built around a custom gravity system that lets the player move across any surface using rigidbody physics. A working demo came together in a day, then grew into a small game with collectables, objectives, and physics toys."
+order: 12
+---
+
+<Video id="jqLfsIoysls" />
+
+In 2022 I had the chance to work alongside someone I respected, on a mechanic that made the offer easy to take: a custom gravity system that let a player move across any surface, working with rigidbody physics. I built the prototype in Unity and C#, with three weeks to prove the concept, and I was happy with where it landed.
+
+<Video id="uWFr3F42aU8" />
+
+## Surface-relative gravity
+
+Starting from a blank project, I put together a demonstration of one idea for the gravity within a day. It looked decent, and it worked well enough that we decided to build on it.
+
+The approach keeps the gravity logic separate from the player. A dedicated component casts raycasts in random directions and caches the result in an exposed variable, which any script can read from as it sees fit. To produce gravity, the player takes the cached surface normal and applies an acceleration force in the opposite direction. With the right physics material and rigidbody settings, it held up well.
+
+## GroundScanner
+
+GroundScanner is that component. Each physics step it fires a single ray in a random direction, and whenever it finds a surface closer than the one it currently holds, it adopts that hit — converging on the nearest ground and caching the point along with its normal.
+
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+public class GroundScanner: CachedMonoBehaviour
+{
+ public RaycastHit groundHit;
+ void OnDrawGizmos()
+    {
+ //draing sphere at locked on point
+ Gizmos.color = Color.red;
+ Gizmos.DrawSphere(groundHit.point, 0.5f);
+    }
+ void FixedUpdate()
+    {
+ CheckGround();
+ //CheckGround();
+    }
+ void CheckGround()
+    {
+ RaycastHit hit;
+ Vector3 direction = Random.insideUnitSphere.normalized;
+ //drawing rays and red line to locked on surface
+ //Debug.DrawRay(position, direction, Color.magenta, 0.1f);
+ Debug.DrawLine(position, groundHit.point, Color.red, 0.1f);
+ if (Physics.Raycast(position, direction, out hit, 100f, 1 << 6))
+        {
+ float newDistance = Vector3.Distance(position, hit.point);
+ float oldDistance = Vector3.Distance(position, groundHit.point);
+ //basic comparison, swap old for new if distance is less
+ if (newDistance < oldDistance)
+ groundHit = hit;
+        }
+    }
+}
+```
+
+## CatController
+
+CatController consumes that cached normal to drive the cat itself — movement, jumping, rolling, and animation — with its motion resolved relative to the surface underfoot rather than a fixed world axis.
+
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Monsterozoids.CameraControls;
+namespace Monsterozoids.Cat
+{
+    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(zScannerTest))]
+    [RequireComponent(typeof(SphereCollider))]
+ public class CatController : CachedMonoBehaviour
+    {
+        [SerializeField] float moveSpeed = 400f;
+        [SerializeField] float gravityForce = 200f;
+        [SerializeField] float jumpForce = 600f;
+        [SerializeField] GameObject cat;
+        [SerializeField] SkinnedMeshRenderer catRenderer;
+        [SerializeField] GameObject ball;
+        [SerializeField] PhysicMaterial ballPhysMat;
+
+ private PhysicMaterial catPhysMat;
+ private SphereCollider sphereCollider;
+ private Rigidbody rb;
+ private zScannerTest scanner;
+ private Animator anim;
+ private InputData inputs;
+ private Vector3 orientationBasis;
+ public enum State
+        {
+ Preplay,
+ Walking,
+ Rolling,
+ Jumping
+        }
+ private State state = State.Walking;
+ private float currentSpeed = 0;
+ private Vector3 moveDir;
+ private Vector3 forwardDir;
+ private Vector3 movementForce;
+ private float jumpTime = 0f;
+ private float idleTime = 0f;
+ private float ballTime = 0f;
+ private bool grounded;
+
+ private float cameraDist;
+ private float cameraAngle;
+ private void Start()
+        {
+ state = State.Preplay;
+ rb = GetComponent<Rigidbody>();
+ scanner = GetComponent<zScannerTest>();
+ sphereCollider = GetComponent<SphereCollider>();
+ anim = cat.GetComponent<Animator>();
+ EventUtil.add(InputEvent.Change, updateInputs);
+ orientationBasis = transform.forward;
+ catPhysMat = sphereCollider.material;
+ CameraManager.configs.angleToGround = 45;
+ LevelPlayStats.instance.onPlaying.AddListener( delegate{
+ state = State.Walking;
+ Debug.Log("trying to set active");
+            });
+        }
+ void Update()
+        {
+ if ( state == State.Preplay) return;
+ forwardDir = Vector3.Cross(scanner.groundHit.normal, -CameraManager.cameraTransform.right);
+ Vector3 up = scanner.groundHit.normal;
+ Vector3 rightDir = -Vector3.Cross(forwardDir, up).normalized;
+ rightDir = (state == State.Walking) ? transform.right: rightDir;
+
+ Vector2 inputDis = (inputs.position - inputs.startPosition);
+ Vector2 inputDir = inputDis.normalized;
+
+ float speedGradientBasis = Screen.height * 0.08f;
+ Vector2 speedGradient = new Vector2(
+ Mathf.Clamp(inputDis.x, -speedGradientBasis, speedGradientBasis) / speedGradientBasis,
+ Mathf.Clamp(inputDis.y, -speedGradientBasis, speedGradientBasis) / speedGradientBasis
+            );
+ //Debug.Log(inputDis + ":" + speedGradient);
+ // make moving backwards less powerful
+ speedGradient *= (speedGradient.y < 0) ? 0.4f: 1;
+ // make turning slightly stronger than moving straight
+ speedGradient.y *= 1f - Mathf.Abs(speedGradient.x * 0.15f);
+ // slow down when turning
+ float turnCurbSpeed = 1f - Mathf.Abs(speedGradient.x * 0.4f);
+
+ float speedGradientMag = speedGradient.magnitude;
+
+
+ if(LevelPlayStats.state == LevelStates.playing)
+            {
+ if(inputs.drag && speedGradient.magnitude > 0.4 )
+                {
+ if (speedGradient.magnitude > 0.4 )
+                    {
+ setCurrentSpeed();
+ moveDir = (speedGradient.x * rightDir + speedGradient.y * forwardDir).normalized;
+ movementForce += speedGradientMag * turnCurbSpeed * currentSpeed * moveDir;
+
+ // set walking animation speed
+ anim.SetFloat("speed", speedGradientMag);
+                    }
+ cameraDist = 20;
+ cameraAngle = 0;
+                }
+ else
+                {
+ cameraDist = 60;
+ cameraAngle = -20;
+                }
+
+ CameraManager.configs.distanceFromPlayer = Mathf.Lerp(CameraManager.configs.distanceFromPlayer, cameraDist, Time.deltaTime);
+ CameraManager.configs.angleToGroundAdjust = Mathf.Lerp(CameraManager.configs.angleToGroundAdjust, cameraAngle, Time.deltaTime);;
+
+            }
+ else if ( LevelPlayStats.state == LevelStates.gameOver ) {
+ // stop the cat from moving if game is over
+ rb.drag = 100;
+            }
+ setState();
+ // Debug.Log(inputs.startPosition);
+        }
+        #region movement
+ private void FixedUpdate()
+        {
+ if ( state == State.Preplay) return;
+ rb.AddForce(movementForce, ForceMode.Impulse);
+ movementForce = Vector3.zero;
+ // basing gravity on normal only so small changes don&#x27;t pull around player
+ float floorDistance = Vector3.Distance(transform.position, scanner.groundHit.point);
+
+ if (floorDistance > 20)
+            {
+ rb.AddForce((scanner.groundHit.point - transform.position).normalized * gravityForce, ForceMode.Acceleration);
+            }
+ else
+            {
+ rb.AddForce(-scanner.groundHit.normal * gravityForce, ForceMode.Acceleration);
+            }
+
+ if (state == State.Walking)
+ calcRotation(true);
+ else
+ calcRotation(false);
+ setPlayerData();
+
+        }
+ private void updateInputs(int inputId, InputData inputData)
+        {
+
+ inputs = inputData;
+        }
+ private void setCurrentSpeed()
+        {
+ currentSpeed = Mathf.Lerp(
+ currentSpeed,
+ inputs.drag ? moveSpeed : 0,
+ Time.deltaTime*10
+                );
+        }
+ private void calcRotation(bool doSetRotation)
+        {
+ // make it smooth
+ Vector3 newBasis = inputs.drag ? moveDir : forwardDir;
+ orientationBasis = Vector3.Slerp(orientationBasis, newBasis, Time.fixedDeltaTime * 5f);
+
+ if (doSetRotation)
+ rotation =
+ Quaternion.Slerp(
+ rotation,
+ Quaternion.LookRotation(orientationBasis, scanner.groundHit.normal),
+ Time.fixedDeltaTime * 5f
+                        );
+        }
+ public void doJump()
+        {
+ //gaurds
+ // TODO: need to set grounded property to keep from multiple jump
+ if(
+                !grounded ||
+ state == State.Rolling ||
+ state == State.Jumping ||
+ LevelPlayStats.state != LevelStates.playing
+                )
+ return;
+ // TODO: make jump cause player to stand if sitting
+ if( idleTime > 6)
+            {
+ idleTime = 0;
+ return;
+            }
+ state = State.Jumping;
+ grounded = false;
+ jumpTime = 0f;
+
+        }
+
+        #endregion
+ private void setPlayerData()
+        {
+ PlayerManager.playerForward = inputs.drag ? orientationBasis : transform.forward;
+ PlayerManager.playerUp = scanner.groundHit.normal;
+ PlayerManager.playerRight = -Vector3.Cross(PlayerManager.playerForward, PlayerManager.playerUp).normalized;
+
+        }
+ private void setState()
+        {
+ // return;
+ switch (state)
+            {
+ case State.Walking:
+                    {
+ if ( inputs.doubleClick && !ball.activeSelf)
+                        {
+ //consume the event
+ inputs.doubleClick = false;
+ cat.SetActive(false);
+ ball.SetActive(true);
+ sphereCollider.material = ballPhysMat;
+ ballTime = 0f;
+ rb.constraints = RigidbodyConstraints.None;
+ state = State.Rolling;
+                        }
+ //animation stuff
+ if (inputs.drag)
+                        {
+ //set appropriate animation
+ anim.SetBool("moving", true);
+ idleTime = 0;
+                        }
+ else
+                        {
+ //stop moving and add to idleTime
+ anim.SetBool("moving", false);
+ idleTime += Time.deltaTime;
+ anim.SetFloat("idleTime", idleTime);
+                        }
+                    }
+ break;
+ case State.Rolling:
+                    {
+ if (ballTime < 0.2f)
+ rb.AddForce(forwardDir * 50, ForceMode.Impulse);
+ else if ( rb.velocity.magnitude < 15f && !inputs.drag)
+                        {
+ cat.SetActive(true);
+ ball.SetActive(false);
+ rb.constraints = RigidbodyConstraints.FreezeRotation;
+ sphereCollider.material = catPhysMat;
+ state = State.Walking;
+                        }
+ ballTime += Time.fixedDeltaTime;
+                    }
+ break;
+ case State.Jumping:
+ jumpTime += Time.deltaTime;
+
+ if (jumpTime < 0.13)
+                    {
+ Vector3 jumpDir = Vector3.Slerp(scanner.groundHit.normal, orientationBasis, 0.0f);
+ movementForce += jumpDir * jumpForce;
+
+                    } else
+ state = State.Walking;
+ break;
+            }
+        }
+ void OnCollisionEnter(Collision collisionInfo)
+        {
+ if (collisionInfo.gameObject.layer == 6)
+            {
+ grounded = true;
+            }
+        }
+
+ public void startPlay()
+        {
+ state = State.Walking;
+        }
+ public void addOutsideForce(Vector3 force)
+        {
+ movementForce += force;
+        }
+    }
+
+}
+```
+
+## From tech demo to game
+
+Paired with a camera that oriented itself from that same cached hit normal, and controls aligned to that camera, the core effect was nearly complete. What remained was turning a playable tech demo into an actual game.
+
+We settled on a collecting game: players gather simple objects scattered through a level, which encourages exploration while keeping the focus on the movement — enjoyable on its own.
+
+Two weeks later it had workable controls, an improved camera, and the gameplay to match: collectables, a mission objective, and physics toys like geysers that launch the player into the air and across levels.
+
+<Video id="FI1eJh08AxM" />

@@ -1,0 +1,39 @@
+---
+title: "Ultimate Fire Link: Olvera Street"
+category: "Light & Wonder · 2026"
+group: "studio"
+cover: "lw"
+role: "Lead Technical Artist"
+year: "2026"
+stack: "Python · Godot · TypeScript · Unity · Blender · After Effects · Photoshop · Adobe Illustrator · RAD Video Tools"
+summary: "A Lead Technical Artist role at Light & Wonder porting Ultimate Fire Link: Olvera Street from Unity to Godot for the charitable gaming market. Much of the work was faithful style-matching — recreating the original game in a new engine — backed by pipeline automation and real-time engineering: an AI-assisted Python font pipeline across 200+ assets, responsive Godot slot UI, bitmap font work for new markets, and motion graphics and video tuned for dedicated hardware."
+order: 2
+---
+
+At its core, Ultimate Fire Link: Olvera Street was a port — recreating an existing Unity title in Godot for the charitable gaming market. Much of the job was style-matching: rebuilding the original game's look and feel faithfully in a new engine, down to the fonts, UI, and motion. That sat across two sides of technical art for me — automating the tedious parts of the content pipeline, and engineering the dynamic, real-time pieces the cabinet needed at runtime.
+
+## Matching the original, asset by asset
+
+Because this was a port, almost nothing carried over untouched. Nearly every asset had to be rebuilt in the new engine and then matched back to the original's style, and there were a lot of them — fonts, UI elements, effects, and motion, each recreated and tuned until it read as the same game players already knew. That per-asset style-matching, done across a high volume of pieces, was as much of the job as any single system I built; keeping the whole title visually consistent with the original was the constant thread running through everything below.
+
+## An AI-assisted font pipeline
+
+The largest piece of automation was a custom Python pipeline for fonts. It parsed Unity .meta files to trace GUID dependencies across more than 200 font assets, isolated the ones actually in use, removed duplicates, and automatically repaired malformed Unity .fnt YAML files to produce clean, Godot-compatible font resources. Built with AI assistance, it turned what would have been weeks of tedious manual conversion into a single automated pass.
+
+## Fonts for new markets
+
+Localized markets brought their own licensing and character requirements. To meet them, I modified, expanded, and edited bitmap font atlases — by hand and by script — adding the newly required characters while keeping the typography crisp.
+
+## Responsive slot UI
+
+On the interface side, I architected responsive 9-patch anchor layout systems in Godot, driven with TypeScript, for the slot-machine displays. They had to hold up across variable cabinet aspect ratios while presenting high-frequency dynamic values — win tickers, live messaging, and the constantly updating numbers a slot needs — without ever breaking layout. Underpinning it was a custom theme file that defined the styles for every element in the UI, so the whole interface stayed consistent and true to the original from one central place, rather than being styled piece by piece.
+
+## Motion graphics and video
+
+I also recreated and modified motion-graphics sequences in After Effects to match the title's original visual style, including authoring a brand-new attract sequence built around a custom fireball effect. Finally, I repaired, compressed, and configured Bink video assets so they played back cleanly on the dedicated hardware.
+
+## A note on the team
+
+I genuinely enjoyed my time at Light & Wonder. The culture was warm and welcoming — the kind of place where people met you with a smile — and that made it easy to do good work. It is easy to talk up a team, so I will keep the rest to what was true for me: it was full of capable, good-natured people, and the work was better for being made alongside them.
+
+I have a particular soft spot for the QA team. So much of a title like this comes down to the parts players never see — the edge cases, the hardware quirks, the repeated passes over something to make sure it holds — and they carried all of it with patience and good humor. Beyond the good company, that relationship mattered professionally: a strong QA team is one of the best problem-solving resources you have. When you hit something you cannot crack on your own, they can help you reproduce it, narrow it down, and figure out what is really going on. They were sharp, they cared about getting things right, and I leaned on that more than once.

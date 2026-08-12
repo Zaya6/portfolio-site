@@ -1,0 +1,870 @@
+---
+title: "Star Raider"
+category: "Personal · Game"
+group: "personal"
+cover: "star-raider"
+role: "Solo developer"
+stack: "Godot · GDScript · GLSL · Procedural Generation"
+summary: "An unfinished mobile roguelike in Godot, built around a stamp-based procedural generation system, with region generation, a spacetime water-reflection shader, and a tile-based movement system."
+order: 8
+---
+
+<Video id="YcKBjiNjdnQ" />
+
+Star Raider is one of my most ambitious personal projects to date: a traditional roguelike for mobile, built in Godot with GDScript. It remains unfinished, but along the way I designed a level-generation algorithm of my own, based on pattern matching and a system of stamps.
+
+## Stamp-based level generation
+
+Generation begins by laying down a kind of scaffolding that marks out the important areas of a level — grass, rocks, entrances, hazards, and so on.
+
+The work is driven by a form of visual programming embedded inside each stamp. The algorithm searches the level for a pattern defined in a stamp and inserts the desired tiles in its place. A few example stamps are shown below.
+
+The first is a simple stamp that fills in ground, represented by green. The left side is the pattern it searches for; the right side is what it stamps in. It also uses red, a meta tile that matches empty space. There are several of these meta tiles with special rules, including wildcards that match anything and tiles that match the edges of the map.
+
+<Media src="/assets/projects/star-raider/m3.jpg" alt="Star Raider media" />
+
+<Media src="/assets/projects/star-raider/m4.jpg" alt="Star Raider media" />
+
+Above is a stamp that builds a specific design. The orange tiles are another meta tile, one that guarantees a tile stays empty so no later stamp can match against it. A second pass then runs with additional stamps that match against ground and empty areas to place grass, water, and rocks.
+
+This was one of the most rewarding things I have built, because a small handful of stamps produced unexpected and genuinely interesting behavior. Since each stamp effectively programs the generation through its own patterns and meta tiles, the same system could likely generate far more than levels — images, items, and textures among them.
+
+## Generation Code
+
+```gdscript
+# x = index % width
+# y = index / width
+# index = y * width + x
+class_name TileMatcher
+#internal variables
+var baseTilemap:TileMap
+var stampTilemap:TileMap
+var library:Array
+var tilesPlaced:Dictionary
+var startTime = -1.0
+var rand = RandomNumberGenerator.new()
+var genSeed = -1
+# constructor, a tilemap to use as a guide map and a stamp library.
+# You can pass another tilemap for stamps to be stamped to, for use in layers, etc
+func _init(ntilemap:TileMap, libraryName:String, nstampTilemap:TileMap=null):
+ rand.randomize()
+ baseTilemap = ntilemap
+ library = TM.stampLibraries[libraryName].duplicate(true)
+
+ # Allow to pass a seperate tilemap to stamp onto, so
+ # things can be added to a level but on another layer
+ #, possible maybe to use for object spawning by creating a faux tilemap
+ if nstampTilemap == null:
+   stampTilemap = baseTilemap
+ else:
+  stampTilemap = nstampTilemap
+# sets the seed to the random number generator
+func setSeed(desiredSeed):
+ genSeed = desiredSeed
+ rand.set_seed(desiredSeed)
+#it's faster to loop through the layout once and
+#then loop through each stamp instead of the other way around
+func generate():
+ #set the start time if one hasn't been set yet
+ if startTime == -1.0:
+  startTime = OS.get_unix_time()
+ #library.shuffle()
+ var die: int = rand.randi()%10 # random number
+
+ #optimization, only loop over existing parts of the map
+ var cover:Rect2 = baseTilemap.get_used_rect()
+ var usedCells = baseTilemap.get_used_cells()
+ usedCells.push_back(Vector2(0,0))
+
+ var cell:Vector2
+ var x:int; var y:int
+
+ #randomly start at beginning of map or end of map
+ var i: int = 0 if die < 5 else usedCells.size() -1
+ var loopiter:int = 1 if die < 5 else -1
+
+ # initializing variables first for optimization
+ # variables for second indentation
+ #var stamp
+ var prob:PoolIntArray
+ var patternWidth:int
+ var patternHeight:int
+ var patternKey:Array
+ var patternArea: int
+ var patternSize: int
+ var j:int = 0
+
+ # variables for third indentation
+ var unlock:int
+ var checkX:int
+ var checkY:int
+ var matchFound:bool = false
+
+ # first indention
+ while i < usedCells.size() and i > -1:
+  cell = usedCells[i]
+  x = cell.x
+  y = cell.y
+
+  # second indention
+  for stamp in library:
+   # check if stamp is set active
+   if not stamp["active"]:
+    continue
+
+   # check if the stamp has passed its limit
+   if stamp["limit"] > 0 and stamp["totalSpawns"] >= stamp["limit"]:
+    continue
+
+   # check probability, cancel if fail
+   prob = stamp["prob"]
+   if rand.randi_range(0,prob[1]) > prob[0]:
+    continue
+
+   patternWidth = int(stamp["pattern_width"])
+   patternHeight = stamp["pattern_height"]
+   patternArea = patternWidth * patternHeight*10
+
+   # tiles in the stamp patter that are blank are discarded. Any tiles
+   # that remain are called "keys" and are stored in array with position.
+   # Less values to loop over
+   patternKey = stamp["pattern_key"]
+   patternSize = patternKey.size()
+
+   # test pattern key against position
+   j = 0
+   while j < patternArea:
+    # if all keys fit the check then the pattern unlocks
+    unlock = patternSize
+
+    # get x/y from pattern and translate pattern across x/y map coord
+    # this digonally tests the key pattern from 0,0 - x,y to test against
+    # areas above and below coordinate
+    checkX = x - j % patternWidth
+    checkY = y - j / patternWidth
+
+    # key[0] is the key's x value
+    # key[1] is the key's y value
+    # key[2] is the key's tile value
+    for key in patternKey:
+     var tileToCheck = baseTilemap.get_cell( checkX + key[0], checkY + key[1] )
+     if key[2] == 0 and tileToCheck >= 0: # meta tile 0 matches to anything
+      unlock -= 1
+     elif tileToCheck == key[2]:
+      unlock -= 1
+     else:
+      break
+
+    # if the unlock number is greater than 0 then not all keys have unlocked
+    if unlock <= 0:
+     pressStamp(stamp["stamp_key"],checkX, checkY)
+     stamp["totalSpawns"] += 1
+     matchFound = true
+     break
+
+    j+=1
+  i += loopiter
+
+ # return relevant data to determine if generation should continue or stop
+ # [0] is a rect2 covering the area of generation
+ # [1] is a dictionary of tiles placed
+ # [2] is true if anything generated during this pass
+ # [3] is the time elapsed since generation started in seconds
+ return [ stampTilemap.get_used_rect(), tilesPlaced, matchFound, OS.get_unix_time() - startTime ]
+# inserts stamp onto target tilemap
+func pressStamp(stampKey, x, y):
+ for key in stampKey:
+  stampTilemap.set_cell(x+key[0], y+key[1], key[2])
+  tilesPlaced[str(key[2])] = true
+# allows the disabeling of certain stamps for customization
+func disableStamp(stampName:String):
+ for stamp in library:
+  if stamp["name"] == stampName:
+   stamp["active"] = false
+# allows to customize the limit for stamps
+func setStampLimit(stampName:String, nlimit:int):
+ for stamp in library:
+  if stamp["name"] == stampName:
+   stamp["limit"] = nlimit
+```
+
+## Stamp JSON representation
+
+```
+{
+ "active": true,
+ "lastSeed": 0,
+ "limit": -1,
+ "name": "ground_fix12",
+ "pattern_height": 5,
+ "pattern_key": [
+        [0,0,4],[1,0,4],[2,0,4],[3,0,4],[4,0,4],[5,0,4],[6,0,4],[0,1,4],[1,1,4],
+        [2,1,4],[3,1,4],[4,1,4],[5,1,4],[6,1,4],[0,2,4],[1,2,4],[2,2,4],[3,2,4],
+        [4,2,4],[5,2,4],[6,2,4],[0,3,4],[1,3,4],[2,3,4],[3,3,4],[4,3,4],[5,3,4],
+        [6,3,4],[0,4,4],[1,4,4],[2,4,4],[3,4,4],[4,4,4],[5,4,4],[6,4,4]
+    ],
+ "pattern_width": 7,
+ "prob": [
+ 1,
+ 100
+    ],
+ "rotate": false,
+ "stamp_height": 4,
+ "stamp_key": [
+        [0,0,4],[1,0,6],[5,0,4],[0,1,4],[1,1,6],[2,1,6],[4,1,6],[5,1,6],[6,1,4],
+        [0,2,4],[1,2,6],[2,2,6],[4,2,6],[5,2,6],[6,2,4],[0,3,4],[1,3,4],[2,3,4],
+        [4,3,4],[5,3,6],[6,3,4],[0,4,4],[1,4,6],[5,4,6],[6,4,4]
+    ],
+ "stamp_width": 4,
+ "totalSpawns": 0
+}
+```
+
+<Media type="video" src="/assets/projects/star-raider/m5.mp4" poster="/assets/projects/star-raider/m5.jpg" />
+
+## Region generation
+
+The game also generates regions — networks of maps linked together by paths. A region is laid out on a grid, with each cell representing a map and rounded areas marking dead ends. A separate step connects regions to one another by assigning directions and the region each one leads to.
+
+<Media src="/assets/projects/star-raider/m6.jpg" alt="Star Raider media" />
+
+<Media src="/assets/projects/star-raider/m7.jpg" alt="Star Raider media" />
+
+Getting this right took some effort. The process starts by filling the grid with random directions, then iterates over it, connecting and refining each link until every cell is reachable. There is also logic to detect isolated islands and join them back into the whole. As the second screenshot shows, the algorithm scales to any grid size.
+
+This work also led me toward the water and reflection shaders shown below, which opened up a whole field of programming I had not touched before.
+
+## Region Generation Code
+
+```gdscript
+class_name Region
+# TODO: Find simpler way to force no empty tiles on region
+var rand = RandomNumberGenerator.new()
+var allowEmpty = true
+var levels = []
+var width = 0
+var height = 0
+# gameplay variables
+var depth = 0
+var depthCustoms = {}
+var posCustoms = {}
+var pos = Vector2(0,0)
+var lastMoveDirection = [false,false,false,false]
+func _init(widthR=[3,6], heightR=[3,6], nseed = -1, defaultLevelPaths=[], nallowEmpty=true, npos=null):
+ allowEmpty = nallowEmpty
+ # set seed for region
+ # if no seed is given, then randomize everything
+ if nseed == -1:
+  randomize()
+  rand.set_seed(randi())
+ else:
+  rand.set_seed(nseed)
+
+ width = rand.randi_range(widthR[0],widthR[1])
+ height = rand.randi_range(heightR[0],heightR[1])
+
+ # allow specification of starting position in region
+ if npos == null:
+  pos = Vector2(rand.randi() % width, rand.randi() % height)
+ else:
+  pos = npos
+
+ print_debug("generated region: ", width,"/", height, " ", pos)
+
+ #fill in random tiles
+ for y in height:
+  levels.append([])
+  for x in width:
+   levels[y].append( RegionTile.new(rand, defaultLevelPaths, nallowEmpty) )
+
+ _fixConnections()
+ _removeIslands()
+
+ #this would be a good place to customize the level or change position before it loads
+ _onGenFinished()
+func _ready():
+ pass
+#### gamplay functions ####
+# run custom code after generation, usually to modify the generated level
+func _onGenFinished():
+ pass
+# by using _ongenfinished, an exist can be added to the region. (At the region edge)
+# this runs when the region has been exited
+func _onOutofRegion(x,y):
+ #default to an error, because usually this is means a bug
+ push_error(str(x) + ":" + str(y) + " is out of region")
+# allow custom function to check movement and cause some other behavior to happen
+# other than default behavior. Returning true allows move to continue, false cancels move
+func _onMove(x,y):
+ return true
+#meant to be used by level exits. Returns the next level
+func moveDir(direction):
+ lastMoveDirection = direction
+ match direction:
+  [true,false,false,false]:
+   move(0,-1)
+  [false,true,false,false]:
+   move(1,0)
+  [false,false,true,false]:
+   move(0,1)
+  [false,false,false,true]:
+   move(-1,0)
+func move(x,y):
+ # check if movement is within region
+ if pos.x + x > -1 and pos.x + x < width and pos.y + y > -1 and pos.y + y < height:
+  # run onmove, to run custom code and to see if another level is needed
+  if _onMove(x,y):
+   pos.x += x
+   pos.y += y
+   # check if level has been visited, if not increase depth
+   if not levels[y][x].isAssignedLevel():
+    depth += 1
+   print_debug("move to: ", pos)
+   loadLevel(pos,depth)
+
+ else:
+  print("out!", pos + Vector2(x,y))
+  _onOutofRegion(x,y)
+func loadFirstLevel():
+ return loadLevel(pos,depth)
+func getCurrentConnections():
+ return levels[pos.y][pos.x].connections
+func getCurrentSeed():
+ return levels[pos.y][pos.x].levelSeed
+# Put in specific levels to be used when the player reaches certain depths
+# It adds the level specified as a resource path at the depth desired. These
+# are stored in a dictionary (depthCustoms) which is checked when a player moves
+# between levels
+func addDepthCustom(depth:int, levelPath:String):
+ depthCustoms[depth]  = levelPath
+# pos customs is similar to the above but for the player's position in the region
+func addPosCustom(pos:Vector2, levelPath:String):
+ posCustoms[pos] = levelPath
+func loadLevel(pos:Vector2, depth:int):
+ # don't even try poscustoms or depthcustoms if the level has been visited.
+ # (if a tile has an assigned level, that means it's been visited before.)
+ # should be fine regardless, just in case
+ if not levels[pos.y][pos.x].isAssignedLevel():
+  if posCustoms.has(pos):
+   # load the custom pos level and assign it to the tile
+   return levels[pos.y][pos.x].spawnLevel(posCustoms[pos])
+  elif depthCustoms.has(depth):
+   # load the custom depth level and assign it to the tile
+   return levels[pos.y][pos.x].spawnLevel(depthCustoms[depth])
+  else:
+   return levels[pos.y][pos.x].spawnLevel()
+ else:
+  return levels[pos.y][pos.x].spawnLevel()
+#### internal functions ####
+func _fixConnections():
+ for y in height:
+  for x in width:
+   var tile = levels[y][x]
+   #manage a connection guide, so regenerated tiles don't connect out of region
+   var allowEmptyGuide = [true,true,true,true]
+
+   #check above tile
+   if y - 1 < 0:
+    tile.connections[0] = false
+    allowEmptyGuide[0] = false
+   else:
+    tile.connections[0] = levels[y-1][x].connections[2]
+
+   #check right of tile
+   if x + 1 >= width:
+    tile.connections[1] = false
+    allowEmptyGuide[1] = false
+   else:
+    tile.connections[1] = levels[y][x+1].connections[3]
+
+   #check below tile
+   if y + 1 >= height:
+    tile.connections[2] = false
+    allowEmptyGuide[2] = false
+   else:
+    tile.connections[2] = levels[y+1][x].connections[0]
+
+   #check left of tile
+   if x - 1 < 0:
+    tile.connections[3] = false
+    allowEmptyGuide[3] = false
+   else:
+    tile.connections[3] = levels[y][x-1].connections[1]
+
+   # add connections to the sorrounding tile if tile is empty
+   # and allowEmpty is false
+   if not allowEmpty and tile.isEmpty():
+    #reset tile connections
+    tile.generateConnections(allowEmpty,allowEmptyGuide)
+
+    #check above tile
+    if y - 1 < 0:
+     tile.connections[0] = false
+    else:
+     levels[y-1][x].connections[2] = tile.connections[0]
+
+    #check right of tile
+    if x + 1 >= width:
+     tile.connections[1] = false
+    else:
+     levels[y][x+1].connections[3] = tile.connections[1]
+
+    #check below tile
+    if y + 1 >= height:
+     tile.connections[2] = false
+    else:
+     levels[y+1][x].connections[0] = tile.connections[2]
+
+    #check left of tile
+    if x - 1 < 0:
+     tile.connections[3] = false
+    else:
+     levels[y][x-1].connections[1] = tile.connections[3]
+# find and remove isolated parts of the map
+func _removeIslands():
+ # Find islands and store them in a list. Store checked tiles
+ var islands = []
+ var checkedTiles = []
+ for y in height:
+  for x in width:
+   if not levels[y][x].isEmpty() and checkedTiles.find([x,y]) == -1:
+    var island = _mapIsland(x,y)
+    islands.append(island)
+    checkedTiles = checkedTiles + island
+
+ var endcase = 1000
+ #print(islands.size())
+
+ # loop through islands and try to find a connection to another island
+ while islands.size() > 1:
+  var connectionFound = false
+  for pos1 in islands[0]:
+   for pos2 in islands[1]:
+    if abs(pos2[0] - pos1[0]) == 1 and abs(pos2[1] - pos1[1]) == 0:
+     connectionFound = true
+    elif abs(pos2[0] - pos1[0]) == 0 and abs(pos2[1] - pos1[1]) == 1:
+     connectionFound = true
+    if connectionFound:
+     levels[pos1[1]][pos1[0]].connectToPosition(pos1,pos2)
+     levels[pos2[1]][pos2[0]].connectToPosition(pos2,pos1)
+     break
+   if connectionFound: break
+
+  if connectionFound:
+   var island1 = islands.pop_front()
+   var island2 = islands.pop_front()
+   islands.append(island1+island2)
+  else:
+   # try new islands
+   islands.shuffle()
+
+  endcase -=1
+  if endcase < 0: break
+ #print(islands.size())
+func _mapIsland(x,y):
+ var connections = [[x,y]]
+ var checkedTiles = []
+ var island = []
+ while connections.size() > 0:
+  if checkedTiles.find(connections[0]) == -1:
+   var chX = connections[0][0]
+   var chY = connections[0][1]
+   connections = connections + levels[chY][chX].getConnectingTiles([chX,chY])
+   island.append(connections[0])
+   checkedTiles.append(connections[0])
+   connections.pop_front()
+  else:
+   connections.pop_front()
+ #print( island )
+ return island
+# returns special a number that represents the order of map connections
+func _getTileNumber (tile):
+ match tile.connections:
+  # all tiles with 3 or more connections
+  [true,true,true,true]:
+   return 0
+  [true,true,true,false]:
+   return 8
+  [true,true,false,true]:
+   return 7
+  [true,false,true,true]:
+   return 10
+  [false,true,true,true]:
+   return 9
+  # tiles with 2 connections
+  [true,true,false,false]:
+   return 6
+  [true,false,false,true]:
+   return 5
+  [false,true,true,false]:
+   return 4
+  [false,false,true,true]:
+   return 3
+  [true,false,true,false]:
+   return 2
+  [false,true,false,true]:
+   return 1
+  #one connection tiles
+  [true,false,false,false]:
+   return 12
+  [false,true,false,false]:
+   return 13
+  [false,false,true,false]:
+   return 14
+  [false,false,false,true]:
+   return 11
+  #no connections
+  [false,false,false,false]:
+   return 15
+ return -1
+func _drawMap(tilemap):
+ for y in height:
+  for x in width:
+   tilemap.set_cell(x,y,_getTileNumber(levels[y][x]))
+```
+
+## Region Map Tile Code
+
+```gdscript
+class_name RegionTile
+extends Node
+var assignedLevel = null
+var levelSeed = 0
+var defaultLevels = []
+# directions : [up,right,down,left] --clockwise from top
+var connections = [false,false,false,false]
+var gen
+func _init(generator, levels, allowEmpty):
+ gen = generator
+ defaultLevels = levels
+ levelSeed = gen.randi()
+ generateConnections(allowEmpty)
+func randBool():
+ if gen.randi() % 10 < 5: return false; else: return true
+func isEmpty():
+ if connections == [false,false,false,false]:
+  return true
+ else:
+  return false
+func generateConnections(allowEmpty=true, guide=[true,true,true,true]):
+ if guide[0]:
+  connections[0] = randBool()
+ if guide[1]:
+  connections[1] = randBool()
+ if guide[2]:
+  connections[2] = randBool()
+ if guide[3]:
+  connections[3] = randBool()
+
+ while not allowEmpty and isEmpty():
+  if guide[0]:
+   connections[0] = randBool()
+  if guide[1]:
+   connections[1] = randBool()
+  if guide[2]:
+   connections[2] = randBool()
+  if guide[3]:
+   connections[3] = randBool()
+func spawnLevel(levelCustom=null):
+ if assignedLevel == null:
+  if levelCustom == null:
+   # if no level has been assigned, and no custom level is provided
+   # pick a random one from the default levels list
+   assignedLevel = defaultLevels[gen.randi() % defaultLevels.size()]
+  else:
+   assignedLevel = levelCustom
+ else:
+  assignedLevel = defaultLevels[gen.randi() % defaultLevels.size()]
+
+ var level = load(assignedLevel)
+ ST.get_tree().change_scene_to(level)
+ ST.currentLevel.connections = connections
+func isAssignedLevel():
+ return not assignedLevel == null
+func connectToPosition(pos1,pos2):
+ var pos = [ pos2[0]-pos1[0], pos2[1]-pos1[1] ]
+ #print(pos)
+ match pos:
+  [0,-1]:
+   connections[0] = true
+  [1,0]:
+   connections[1] = true
+  [0,1]:
+   connections[2] = true
+  [-1,0]:
+   connections[3] = true
+
+func getConnectingTiles(pos):
+ var connectedTiles = []
+ #check top
+ if connections[0]:
+  connectedTiles.append([pos[0],pos[1]-1])
+ #check right
+ if connections[1]:
+  connectedTiles.append([pos[0]+1,pos[1]])
+ #check below
+ if connections[2]:
+  connectedTiles.append([pos[0],pos[1]+1])
+ #check left
+ if connections[3]:
+  connectedTiles.append([pos[0]-1,pos[1]])
+
+ return connectedTiles
+```
+
+<Media type="video" src="/assets/projects/star-raider/m8.mp4" poster="/assets/projects/star-raider/m8.jpg" />
+
+## 2D Water Reflection
+
+I wanted a very particular look for the game: an otherworldly water covering most of each level, standing in for spacetime. This was my first real foray into shader development, and I loved every second of it. The technique is simple — the game's background is painted magenta (255, 0, 255), and the shader applies water and reflections only to that color, leaving tiles and characters untouched.
+
+## 2D Water Reflection Shader
+
+```glsl
+shader_type canvas_item;
+uniform vec2 cameraPosition = vec2(0.);
+uniform sampler2D starsFront;
+uniform sampler2D starsBack;
+uniform sampler2D nebulaFront;
+uniform sampler2D nebulaBack;
+vec3 getBackground(vec2 uv, float time, vec2 offset){
+ vec3 black = vec3(0.);
+ //background
+ vec2 wiggleF = vec2 ( .0005*cos(time*20.0+500. * uv.y), .005*cos(time*10.0-1000. * uv.y));
+ vec2 wiggleB = vec2 ( .0005*cos(time*20.0+100. * uv.y), .005*cos(time*10.0-100. * uv.y));
+
+ vec3 sf = textureLod(starsFront, offset + vec2(uv.x * 1.2, uv.y *1.8) + wiggleB, 0.).rgb;
+ vec3 sb = textureLod(starsBack, offset + vec2(uv.x * 1.5, uv.y *2.) + wiggleB, 0.).rgb*.7;
+
+ vec3 nf = textureLod(nebulaFront, offset*0.42 + uv*0.5 + wiggleB, 0.).rgb * 0.2;
+ vec3 nb = textureLod(nebulaBack, offset+ uv + wiggleB*0.1, 0.).rgb * 0.15;
+ return black+nb+sb+nf+sf;
+// return black;
+}
+void fragment(){
+ float pixely = SCREEN_PIXEL_SIZE.y;
+ float pixelx = SCREEN_PIXEL_SIZE.x;
+ float mirrorHeight = pixely * 150. * (sin( (UV.y*1.6) * 2.) );
+ vec3 screen = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0).rgb;
+ vec2 offset = cameraPosition / (1.0 / SCREEN_PIXEL_SIZE);
+
+ vec3 background = getBackground(UV,TIME,offset);
+ vec3 ripples = vec3(0.);
+
+ //get rid of pink color lines for artificial reflection height
+ if (screen == vec3(1,0,1)){
+  screen = vec3(0);
+ }
+
+ //ripples
+ for ( float i = 0.; i < mirrorHeight; i += pixely){
+
+  //get of position above to check for color to determine if ripple is needed
+  vec2 checkPos = SCREEN_UV + vec2(0., i);
+  vec3 checkPoint = textureLod(SCREEN_TEXTURE, checkPos, 0.).rgb;
+  //check if the reflection point is found
+  if ( length( checkPoint ) > .2 ) {
+   if ( length(textureLod(SCREEN_TEXTURE, checkPos + vec2(0., i/2.), 0.).rgb) < .1 ) continue;
+   if ( length(textureLod(SCREEN_TEXTURE, checkPos + vec2(0., i/4.), 0.).rgb) < .1 ) continue;
+   if ( length(textureLod(SCREEN_TEXTURE, checkPos + vec2(0., i/5.), 0.).rgb) < .1 ) continue;
+   if ( length(textureLod(SCREEN_TEXTURE, checkPos + vec2(0., i/6.), 0.).rgb) < .1 ) continue;
+   if ( length(textureLod(SCREEN_TEXTURE, checkPos + vec2(0., i/8.), 0.).rgb) < .1 ) continue;
+   if ( length(textureLod(SCREEN_TEXTURE, checkPos + vec2(0., i/10.), 0.).rgb) < .1 ) continue;
+   if ( length(textureLod(SCREEN_TEXTURE, checkPos + vec2(0., i/20.), 0.).rgb) < .1 ) continue;
+   //get mirror point based on where guide line was found
+   vec2 mirPos = checkPos + vec2(0., i);
+
+   //calculate fade for lod and fade to black
+   float fade = 1.*(1. - i / mirrorHeight);
+   vec2 rippleWiggle = vec2(.0005*cos(TIME*20.0+500. * UV.y), .005*cos(TIME*10.0-1000. * UV.y) );
+
+   //set ripple refection color
+   vec3 mirColor = textureLod(SCREEN_TEXTURE, mirPos + rippleWiggle, 1.-fade).rgb;
+
+   //get rid of pink guide line in reflection
+   if( length(mirColor) < .2){
+    continue;
+   } else {
+    //apply fade to black
+    //if (mirColor.r*0.2 > mirColor.g && mirColor.b*0.2 > mirColor.g ) {mirColor = vec3(0)}
+    mirColor *= fade;
+    mirColor*= 0.5;
+    ripples = mirColor;
+    break;
+   }
+  }
+ }
+
+
+ //check if the pixel on screen is foreground by seeing the strength of it&#x27;s color, otherwise blend them together.
+ //allows transparency for foreground objects over water
+ if (length(screen) < .2 ) {
+  COLOR = vec4(background+screen+ripples,1);
+ } else {
+  COLOR = vec4(screen, 1);
+ }
+
+}
+```
+
+## Character Movement
+
+Because the project uses Godot's default tilemap in an unconventional way, entity code had to be written with that in mind. Entity and player logic are closely tied: the player class is a child of the EntityController class, which handles collision, ground checks, and states.
+
+## EntityController Code
+
+```gdscript
+class_name EntityController
+extends KinematicBody2D
+var aggression = 0
+var fear = 0
+var power = 0
+var weight = 1
+var health = 1
+#internal use only
+var _debugMap = false
+var _anim:AnimationPlayer = null
+var state = null
+var states = {}
+var _attackTarget = null
+var _moveTarget = Vector2(0,0)
+var _lastPosition = Vector2(0,0)
+var _lastMove = Vector2(0,0)
+var _speed = 128
+var _map:TileMap = null
+var _index = 0
+var _isMoving = false
+#### internal functions
+func _init():
+ pass
+func _ready():
+ if ST.currentLevel:
+  _map = ST.currentLevel.getMap()
+  _index = ST.currentLevel.addEntity(self)
+ else:
+  _map = TileMap.new()
+  _debugMap = true
+ _anim = $anim
+ _anim.set_blend_time("walk", "idle", 0.1)
+ var resetpos = _resetPositionToMap(position)
+ _moveTarget = resetpos
+ _lastPosition = resetpos
+ set_position(resetpos)
+#### movement code ####
+func _physics_process(delta:float):
+ if _moveTarget != position:
+  if not _isMoving:
+   _isMoving = true
+   _onMoveStarted()
+  _moveToward(_moveTarget,delta)
+ elif _isMoving: #if the first fails, movement must have stopped if _isMoving is true
+  _isMoving = false
+  _onMoveEnded()
+func _moveToward(target:Vector2, delta:float):
+ var distance:float = position.distance_to(target)
+ var movement:Vector2 = position.direction_to(target) * _speed * delta
+ # if the movement is less than the distance to target,
+ # just move fully to target
+ if distance < position.distance_to(position+movement):
+  movement = target - position
+
+ if move_and_collide(movement):
+  #if true, then a collision occured
+  # go back to the last position
+  _moveTarget = _lastPosition
+func _resetPositionToMap(pos:Vector2)->Vector2:
+ return _map.map_to_world(_map.world_to_map(pos)) + Vector2(32,32)
+func _moveByTile(moveTiles:Vector2)->bool:
+ #make sure it's one at a time
+ moveTiles.x = clamp(moveTiles.x, -1, 1)
+ moveTiles.y = clamp(moveTiles.y, -1, 1)
+
+ return _tryMove(moveTiles * Vector2(64,64))
+func _tryMove(move:Vector2)->bool:
+ #only move when not already moving
+ if not _ismoving():
+  if not _testMoveBlocked(move):
+   _lastPosition = position
+   _moveTarget = position + move
+   _lastMove = move
+   _setArtDirection(move)
+   return true
+  else:
+   return false
+ return false
+func _testMoveBlocked(move:Vector2)->bool:
+ var movePosition = position + move
+ #check map first if tile moving to is empty
+ if not _debugMap and not _checkTileNav(_map.get_cellv(_map.world_to_map(movePosition))):
+  return true
+ elif test_move(get_transform(), move, true):
+  return true
+ return false
+func _ismoving()->bool:
+ return not position == _moveTarget
+func _setArtDirection(movement:Vector2):
+ for child in $artCenter/faces.get_children():
+  child.hide()
+
+ match movement:
+  Vector2(0,-64):
+   $artCenter/faces/up.show()
+  Vector2(64,-64):
+   $artCenter/faces/upright.show()
+  Vector2(64,0):
+   $artCenter/faces/right.show()
+  Vector2(64,64):
+   $artCenter/faces/rightdown.show()
+  Vector2(0,64):
+   $artCenter/faces/down.show()
+  Vector2(-64,64):
+   $artCenter/faces/leftDown.show()
+  Vector2(-64,0):
+   $artCenter/faces/left.show()
+  Vector2(-64,-64):
+   $artCenter/faces/upleft.show()
+  Vector2(0,0):
+   $artCenter/faces.get_children()[randi() % 8].show()
+func _checkTileNav(cell:int)->bool:
+ match cell:
+  -1:
+   return false
+  2:
+   return false
+  3:
+   return false
+ return true
+# helper functions
+# callback functions
+func _onMoveEnded():
+ $Particles2D.emitting = false
+ _anim.play("idle")
+func _onMoveStarted():
+ _anim.play("walk")
+ $Particles2D.emitting = true
+# outside Functions
+func executeTurn()->void:
+ if state != null:
+  states[state].call_func()
+ else:
+  nullState()
+#### States ####
+func nullState():
+ wander()
+func addState(name:String,stateFunction:FuncRef):
+ states[name] = stateFunction
+
+# Behavior functions
+func moveRandomly()->void:
+ var tries = 10
+ while tries > 0 and not _moveByTile(Vector2(round(rand_range(-1,1)),round(rand_range(-1,1)))):
+  tries -= 1
+func wander()->void:
+ if _lastMove == Vector2(0,0):
+  moveRandomly()
+ elif randi() %  10 < 6:
+  if not _tryMove(_lastMove):
+   moveRandomly()
+ else:
+  moveRandomly()
+```
