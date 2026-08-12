@@ -34,6 +34,8 @@
       radial-gradient(100% 60% at 50% 120%, rgba(201,162,75,0.03), transparent 60%);
     background-attachment: fixed;
   }
+  /* fixed backgrounds jank/flicker on iOS Safari and touch devices — pin to scroll there (visually identical) */
+  @media (hover: none), (max-width: 900px){ body { background-attachment: scroll; } }
   ::selection { background: rgba(201,162,75,0.28); color: var(--ink); }
   a { color: inherit; text-decoration: none; }
   .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--pad); }
@@ -43,6 +45,10 @@
   header.bar { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(8px);
     background: linear-gradient(var(--ground), rgba(13,11,9,0.72)); border-bottom: 1px solid var(--hairline); }
   .bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.05rem; }
+  /* nav disclosure: on desktop the summary is hidden and the nav shows inline regardless of open state */
+  .nav-disclosure > summary { display: none; list-style: none; }
+  .nav-disclosure > summary::-webkit-details-marker { display: none; }
+  .nav-disclosure .main { display: flex; }
   .mark { font-family: var(--font-serif); font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0; font-size: 1.2rem; letter-spacing: 0.01em; color: var(--ink); }
   .mark b { color: var(--gold); font-weight: 400; }
   nav.main { display: flex; gap: clamp(0.9rem, 2.4vw, 2rem); align-items: center; }
@@ -52,7 +58,45 @@
   nav.main a:hover { color: var(--ink); }
   nav.main a:hover::after, nav.main a.current::after { width: 100%; }
   nav.main a:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 2px; }
-  @media (max-width: 760px){ nav.main .nav-hide { display: none; } }
+  /* 760–860px: inline nav, secondary items condensed away to avoid crowding the wordmark */
+  @media (max-width: 860px){ nav.main .nav-hide { display: none; } }
+
+  /* ≤760px: collapse the whole nav into a CSS-only hamburger drawer (no JS) */
+  @media (max-width: 760px){
+    .bar-inner { position: relative; }
+    .nav-disclosure > summary {
+      display: grid; place-items: center; width: 44px; height: 44px; margin-block: -0.5rem;
+      cursor: pointer; border: 1px solid var(--hairline-2); background: var(--surface); border-radius: 2px;
+      transition: border-color .2s ease;
+    }
+    .nav-disclosure > summary:hover { border-color: var(--gold); }
+    .nav-disclosure > summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .nav-toggle-bars, .nav-toggle-bars::before, .nav-toggle-bars::after {
+      content: ""; display: block; width: 20px; height: 1.5px; background: var(--ink); transition: transform .25s ease, background .2s ease;
+    }
+    .nav-toggle-bars { position: relative; }
+    .nav-toggle-bars::before { position: absolute; left: 0; top: -6px; }
+    .nav-toggle-bars::after  { position: absolute; left: 0; top:  6px; }
+    .nav-disclosure[open] .nav-toggle-bars { background: transparent; }
+    .nav-disclosure[open] .nav-toggle-bars::before { transform: translateY(6px) rotate(45deg); }
+    .nav-disclosure[open] .nav-toggle-bars::after  { transform: translateY(-6px) rotate(-45deg); }
+
+    .nav-disclosure .main {
+      display: none; flex-direction: column; align-items: stretch; gap: 0;
+      position: absolute; top: calc(100% + 0.55rem); left: 0; right: 0; z-index: 30;
+      background: var(--surface); border: 1px solid var(--hairline-2); padding: 0.4rem;
+      box-shadow: 0 20px 44px -22px rgba(0,0,0,0.85);
+    }
+    .nav-disclosure[open] .main { display: flex; }
+    .nav-disclosure .main a {
+      display: block; padding: 0.85rem 0.9rem; font-size: 0.98rem; color: var(--ink);
+      border-bottom: 1px solid var(--hairline);
+    }
+    .nav-disclosure .main a:last-child { border-bottom: none; }
+    .nav-disclosure .main a.current { color: var(--gold); }
+    .nav-disclosure .main a::after { display: none; }
+    .nav-disclosure .main .nav-hide { display: block; }
+  }
 
   /* generic page hero */
   .page-hero { padding-block: clamp(3rem, 9vh, 6rem) clamp(1.5rem, 4vh, 3rem); }
@@ -97,6 +141,8 @@
   .content-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: clamp(2rem, 6vw, 4.5rem); align-items: start; }
   .content-grid > * { min-width: 0; }
   @media (max-width: 860px){ .content-grid { grid-template-columns: 1fr; } }
+  .prose h2 { font-family: var(--font-serif); font-weight: 400; font-optical-sizing: auto; font-size: clamp(1.5rem, 4vw, 1.95rem); line-height: 1.15; letter-spacing: -0.01em; color: var(--ink); margin: 2.4rem 0 0.8rem; }
+  .prose h2:first-child { margin-top: 0; }
   .prose h3 { font-family: var(--font-sans); font-weight: 600; font-size: 1.05rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); margin: 2.2rem 0 0.7rem; }
   .prose h3:first-child { margin-top: 0; }
   .prose p { margin: 0 0 1rem; max-width: var(--measure); color: var(--ink); }

@@ -13,10 +13,13 @@ const items = [
 <header class="bar">
   <div class="wrap bar-inner">
     <a class="mark" href="/" aria-label="Isaiah Gilliland — home">Isaiah&nbsp;<b>Gilliland</b></a>
-    <nav class="main" aria-label="Primary">
-      {items.map((i) => (
-        <a href={i.href} class:list={[{ current: i.label === current, 'nav-hide': i.hide }]}>{i.label}</a>
-      ))}
-    </nav>
+    <details class="nav-disclosure">
+      <summary class="nav-toggle" aria-label="Menu"><span class="nav-toggle-bars" aria-hidden="true"></span></summary>
+      <nav class="main" aria-label="Primary">
+        {items.map((i) => (
+          <a href={i.href} class:list={[{ current: i.label === current, 'nav-hide': i.hide }]}>{i.label}</a>
+        ))}
+      </nav>
+    </details>
   </div>
 </header>
