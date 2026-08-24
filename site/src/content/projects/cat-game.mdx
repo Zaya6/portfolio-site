@@ -35,7 +35,7 @@ public class GroundScanner: CachedMonoBehaviour
  public RaycastHit groundHit;
  void OnDrawGizmos()
     {
- //draing sphere at locked on point
+ //drawing sphere at locked on point
  Gizmos.color = Color.red;
  Gizmos.DrawSphere(groundHit.point, 0.5f);
     }
@@ -195,7 +195,7 @@ namespace Monsterozoids.Cat
  if ( state == State.Preplay) return;
  rb.AddForce(movementForce, ForceMode.Impulse);
  movementForce = Vector3.zero;
- // basing gravity on normal only so small changes don&#x27;t pull around player
+ // basing gravity on normal only so small changes don't pull around player
  float floorDistance = Vector3.Distance(transform.position, scanner.groundHit.point);
 
  if (floorDistance > 20)
@@ -243,7 +243,7 @@ namespace Monsterozoids.Cat
         }
  public void doJump()
         {
- //gaurds
+ //guards
  // TODO: need to set grounded property to keep from multiple jump
  if(
                 !grounded ||

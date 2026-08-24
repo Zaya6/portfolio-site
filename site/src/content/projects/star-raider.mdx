@@ -51,7 +51,7 @@ func _init(ntilemap:TileMap, libraryName:String, nstampTilemap:TileMap=null):
  baseTilemap = ntilemap
  library = TM.stampLibraries[libraryName].duplicate(true)
 
- # Allow to pass a seperate tilemap to stamp onto, so
+ # Allow to pass a separate tilemap to stamp onto, so
  # things can be added to a level but on another layer
  #, possible maybe to use for object spawning by creating a faux tilemap
  if nstampTilemap == null:
@@ -125,7 +125,7 @@ func generate():
    patternHeight = stamp["pattern_height"]
    patternArea = patternWidth * patternHeight*10
 
-   # tiles in the stamp patter that are blank are discarded. Any tiles
+   # tiles in the stamp pattern that are blank are discarded. Any tiles
    # that remain are called "keys" and are stored in array with position.
    # Less values to loop over
    patternKey = stamp["pattern_key"]
@@ -138,7 +138,7 @@ func generate():
     unlock = patternSize
 
     # get x/y from pattern and translate pattern across x/y map coord
-    # this digonally tests the key pattern from 0,0 - x,y to test against
+    # this diagonally tests the key pattern from 0,0 - x,y to test against
     # areas above and below coordinate
     checkX = x - j % patternWidth
     checkY = y - j / patternWidth
@@ -176,7 +176,7 @@ func pressStamp(stampKey, x, y):
  for key in stampKey:
   stampTilemap.set_cell(x+key[0], y+key[1], key[2])
   tilesPlaced[str(key[2])] = true
-# allows the disabeling of certain stamps for customization
+# allows the disabling of certain stamps for customization
 func disableStamp(stampName:String):
  for stamp in library:
   if stamp["name"] == stampName:
@@ -391,7 +391,7 @@ func _fixConnections():
    else:
     tile.connections[3] = levels[y][x-1].connections[1]
 
-   # add connections to the sorrounding tile if tile is empty
+   # add connections to the surrounding tile if tile is empty
    # and allowEmpty is false
    if not allowEmpty and tile.isEmpty():
     #reset tile connections
@@ -696,7 +696,7 @@ void fragment(){
  }
 
 
- //check if the pixel on screen is foreground by seeing the strength of it&#x27;s color, otherwise blend them together.
+ //check if the pixel on screen is foreground by seeing the strength of its color, otherwise blend them together.
  //allows transparency for foreground objects over water
  if (length(screen) < .2 ) {
   COLOR = vec4(background+screen+ripples,1);
@@ -769,7 +769,7 @@ func _moveToward(target:Vector2, delta:float):
   movement = target - position
 
  if move_and_collide(movement):
-  #if true, then a collision occured
+  #if true, then a collision occurred
   # go back to the last position
   _moveTarget = _lastPosition
 func _resetPositionToMap(pos:Vector2)->Vector2:

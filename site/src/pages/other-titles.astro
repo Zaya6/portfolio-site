@@ -8,7 +8,7 @@ import { everiTitles, everiTools } from '../data/everiTitles.js';
       <p class="crumb reveal r1"><a href="/">Work</a> <span class="arrow">&rarr;</span> Other Everi titles</p>
       <p class="eyebrow reveal r1" style="margin-top:1rem;">Everi &middot; Top Shelf Studio</p>
       <h1 class="reveal r2">Other titles I worked on</h1>
-      <p class="lede reveal r3">Beyond the titles with their own pages here, I contributed to many more during my time at Everi &mdash; mostly VFX, particles, and 2D animation, with some rigging and art-pipeline work. Here's what I did on each.</p>
+      <p class="lede reveal r3">Beyond the titles with their own pages here, I contributed to many more during my time at Everi &mdash; mostly VFX, particles, and 2D animation, with some rigging and art-pipeline work. Here’s what I did on each.</p>
       {everiTools.map((t) => <p class="tool-note reveal r3" set:html={t.replace(/—/g, '&mdash;')} />)}
     </div>
   </section>
